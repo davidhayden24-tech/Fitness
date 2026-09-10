@@ -1,0 +1,123 @@
+// AdaptFit data model - see project spec section 5.
+// Postgres (Supabase/Neon) via Prisma.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Exercise {
+  id                 String   @id @default(cuid())
+  name               String
+  description        String
+  muscleGroups       String[] // MuscleGroup[] tag vocabulary lives in @adaptfit/shared
+  equipment          String   @default("none")
+  difficulty         String // beginner | intermediate | advanced
+  contraindications  String[] // ContraindicationTag[]
+  substituteGroupId  String // exercises sharing this id are interchangeable
+  videoAssetRef      String? // pointer to video/animation asset - not seeded with real media
+  defaultSets        Int?
+  defaultReps        Int?
+  defaultDurationSec Int?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  plannedExercises PlannedExercise[]
+
+  @@index([substituteGroupId])
+}
+
+model User {
+  id                   String   @id @default(cuid())
+  email                String   @unique
+  fitnessLevel         String // beginner | intermediate | advanced
+  goals                String[] // Goal[]
+  flaggedInjuries      String[] // ContraindicationTag[] - explicit body-area flags
+  excludedExerciseIds  String[] // built from injury flags + explicit thumbs-down
+  minutesPerSession    Int      @default(30)
+  daysPerWeek          Int      @default(4)
+  subscriptionStatus   String   @default("free")
+  coachMemorySummary   String? // rolling summary of recurring complaints/preferences
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  workoutPlans      WorkoutPlan[]
+  sessionLogs       SessionLog[]
+  adaptationEvents  AdaptationEvent[]
+}
+
+model WorkoutPlan {
+  id         String   @id @default(cuid())
+  userId     String
+  weekNumber Int
+  createdAt  DateTime @default(now())
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions WorkoutSession[]
+
+  @@index([userId, weekNumber])
+}
+
+model WorkoutSession {
+  id        String @id @default(cuid())
+  planId    String
+  dayNumber Int
+  splitType String // push | pull | legs | core | full_body | rest
+
+  plan      WorkoutPlan       @relation(fields: [planId], references: [id], onDelete: Cascade)
+  exercises PlannedExercise[]
+  logs      SessionLog[]
+
+  @@index([planId])
+}
+
+model PlannedExercise {
+  id                String  @id @default(cuid())
+  sessionId         String
+  exerciseId        String
+  order             Int
+  sets              Int?
+  reps              Int?
+  durationSeconds   Int?
+
+  session  WorkoutSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  exercise Exercise       @relation(fields: [exerciseId], references: [id])
+
+  @@index([sessionId])
+}
+
+model SessionLog {
+  id                  String    @id @default(cuid())
+  userId              String
+  sessionId           String
+  date                DateTime  @default(now())
+  completedExercises  Json // CompletedExercise[]
+  skippedExercises    Json // SkippedExercise[]
+  feedback            String? // too_easy | too_hard | pain | good
+  durationSeconds     Int?
+
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session WorkoutSession @relation(fields: [sessionId], references: [id])
+
+  @@index([userId, date])
+}
+
+// Audit trail proving the AI actually adapts - also future training data.
+model AdaptationEvent {
+  id                    String   @id @default(cuid())
+  userId                String
+  trigger               String // injury_flag | thumbs_down | missed_sessions | coach_conversation
+  originalExerciseId    String
+  substituteExerciseId  String
+  contraindicationTag   String?
+  note                  String?
+  timestamp             DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, timestamp])
+}

@@ -1,0 +1,68 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/backend/**"
+      - "packages/shared/**"
+      - "package-lock.json"
+      - ".github/workflows/backend-ci.yml"
+  pull_request:
+    paths:
+      - "apps/backend/**"
+      - "packages/shared/**"
+      - "package-lock.json"
+      - ".github/workflows/backend-ci.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: adaptfit_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/adaptfit_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+        working-directory: apps/backend
+
+      - name: Typecheck (backend + shared)
+        run: npx tsc --noEmit -p tsconfig.json
+        working-directory: apps/backend
+
+      - name: Apply migrations
+        run: npx prisma migrate deploy
+        working-directory: apps/backend
+
+      - name: Run unit tests
+        run: npm test
+        working-directory: apps/backend
+
+      - name: Build (proves the production Docker build's compile step works)
+        run: npm run build:backend

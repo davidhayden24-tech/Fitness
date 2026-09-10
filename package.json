@@ -1,0 +1,21 @@
+{
+  "name": "adaptfit",
+  "private": true,
+  "version": "0.1.0",
+  "description": "AdaptFit - the home workout app that actually listens when something hurts",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "postinstall": "npm run build --workspace=@adaptfit/shared && npm run prisma:generate --workspace=@adaptfit/backend",
+    "dev:backend": "npm run dev --workspace=@adaptfit/backend",
+    "dev:mobile": "npm run start --workspace=@adaptfit/mobile",
+    "build:backend": "npm run build --workspace=@adaptfit/shared && npm run build --workspace=@adaptfit/backend",
+    "test": "npm run test --workspace=@adaptfit/backend",
+    "seed": "npm run seed --workspace=@adaptfit/backend"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

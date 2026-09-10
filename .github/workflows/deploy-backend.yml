@@ -1,0 +1,26 @@
+name: Deploy backend to Render
+
+# Manual only - deliberately not triggered by push. Render's own GitHub
+# integration (set up when you connect render.yaml as a Blueprint) already
+# auto-deploys every push on its own; wiring this to `push` too would cause
+# double-deploys. Use this instead when you want a deploy that only fires
+# after CI has actually passed, or want to redeploy on demand without a new
+# commit.
+#
+# Setup: Render dashboard -> adaptfit-backend service -> Settings -> Deploy
+# Hook -> copy the URL -> add it as a repo secret named RENDER_DEPLOY_HOOK_URL
+# (Settings -> Secrets and variables -> Actions).
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy hook
+        run: |
+          if [ -z "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" ]; then
+            echo "::error::RENDER_DEPLOY_HOOK_URL secret is not set - see comments in this workflow file."
+            exit 1
+          fi
+          curl -fsS -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
