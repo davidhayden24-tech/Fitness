@@ -3,7 +3,7 @@ import { prisma } from "../db";
 import { verifyAndroidSubscription } from "../billing/googlePlay";
 import { UserNotFoundError } from "./adaptationService";
 
-const ANDROID_PACKAGE_NAME = "com.adaptfit.app";
+const ANDROID_PACKAGE_NAME = "com.daithi21.adaptfit";
 
 export class SubscriptionVerificationError extends Error {}
 

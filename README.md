@@ -131,10 +131,12 @@ Before your first build:
 1. `npm install -g eas-cli` (or use `npx eas-cli`), then `eas login`.
 2. **Replace the placeholders** - these were left as placeholders on purpose,
    not real values:
-   - `apps/mobile/app.json` -> `ios.bundleIdentifier` and `android.package`
-     are set to `com.adaptfit.app`. Change these to an identifier you
-     actually own; both platforms treat this as a permanent, globally-unique
-     ID you cannot change after your first submission.
+   - `apps/mobile/app.json` -> `android.package` is registered on Play Console
+     as `com.daithi21.adaptfit` (kept in sync with `ANDROID_PACKAGE_NAME` in
+     `apps/backend/src/services/billingService.ts`). `ios.bundleIdentifier`
+     is still the `com.adaptfit.app` placeholder - pick a real one before
+     your first App Store submission. Both platforms treat this as a
+     permanent, globally-unique ID you cannot change after first submission.
    - `apps/mobile/app.json` -> `extra.eas.projectId` is a placeholder. Run
      `eas init` from `apps/mobile` to create the real EAS project and have it
      filled in automatically.
@@ -184,8 +186,8 @@ app call `finishTransaction` to acknowledge the purchase with Play.
 3. Set `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` on the backend to the *raw JSON
    contents* of that key file (not a file path) - see `.env.example`.
 4. Confirm `ANDROID_PACKAGE_NAME` in `apps/backend/src/services/billingService.ts`
-   matches `apps/mobile/app.json` -> `android.package` (both default to
-   `com.adaptfit.app`).
+   matches `apps/mobile/app.json` -> `android.package` (both set to
+   `com.daithi21.adaptfit`, the package registered on Play Console).
 
 **Verification confidence - read before trusting this blindly:** this is
 the one piece of this build I could not test end-to-end. `react-native-iap`
