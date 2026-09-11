@@ -154,6 +154,52 @@ Before your first build:
 You'll still need an Apple Developer Program membership ($99/yr) and a
 Google Play Console account ($25 one-time) before step 5 will succeed.
 
+## Google Play Billing (subscriptions)
+
+The conversational coach (`/api/coach/checkin`) is gated behind
+`user.subscriptionStatus === "active"`, sold as a real Google Play
+subscription - Android only for now; the backend fails closed with a 501
+for iOS (`apps/backend/src/routes/billing.ts`), since App Store Server API
+verification isn't wired up.
+
+**How it works:** `apps/mobile/src/billing/useSubscription.ts` uses
+`react-native-iap`'s `useIAP()` hook to fetch the subscription product,
+launch the Play purchase flow, and hand the resulting purchase to
+`POST /api/billing/verify`. The backend (`apps/backend/src/billing/googlePlay.ts`,
+`services/billingService.ts`) re-verifies the purchase token directly against
+the Google Play Developer API (`purchases.subscriptionsv2.get`) before
+touching `subscriptionStatus` - the client's own claim of success is never
+trusted. Only after that server-side verification succeeds does the mobile
+app call `finishTransaction` to acknowledge the purchase with Play.
+
+**Setup you still need to do:**
+
+1. In Play Console, create a subscription product with the product ID
+   `adaptfit_plus_monthly` (`packages/shared/src/billing.ts` ->
+   `ADAPTFIT_PLUS_SKU` - change both together if you use a different ID),
+   set its price, and add a base plan + offer.
+2. Create a Google Cloud service account with access to the Play Developer
+   API for your app (Play Console -> Setup -> API access), grant it
+   "View financial data" permission at minimum, and download its JSON key.
+3. Set `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` on the backend to the *raw JSON
+   contents* of that key file (not a file path) - see `.env.example`.
+4. Confirm `ANDROID_PACKAGE_NAME` in `apps/backend/src/services/billingService.ts`
+   matches `apps/mobile/app.json` -> `android.package` (both default to
+   `com.adaptfit.app`).
+
+**Verification confidence - read before trusting this blindly:** this is
+the one piece of this build I could not test end-to-end. `react-native-iap`
+is a native module (Nitro-based) with no JS/web fallback, so it cannot run
+under Expo web or in this sandbox at all, and there's no real Play Console
+product configured yet to test against. The integration was built by
+installing the real `react-native-iap` and `googleapis` packages and
+type-checking against their actual shipped type definitions (not guessed
+from memory), and the backend half was smoke-tested live (auth gating,
+request/response shapes), but the full purchase -> verify -> entitle loop
+has only been verified by reading types, not by running it. Test it for
+real on a signed `preview`/`production` build with a Play Console license
+tester account before shipping.
+
 ## What's stubbed / needs your input
 
 - **Exercise content**: the seed library (`apps/backend/src/data/exercises.ts`)
@@ -175,10 +221,11 @@ Google Play Console account ($25 one-time) before step 5 will succeed.
 - **Muscle-group / contraindication tags**: a reasonable first pass for MVP
   purposes. Have someone with exercise-science/PT background review them
   before this substitutes for real injury-safe programming.
-- **Pricing**: no real payment integration. The mobile Coach screen gates on
-  `user.subscriptionStatus === "active"` and shows a placeholder upsell -
-  actual prices and a payment provider (RevenueCat, Stripe, etc.) are still
-  open decisions.
+- **Pricing**: Android billing is wired up for real via Google Play
+  subscriptions (see "Google Play Billing" above) - price itself is whatever
+  you set on the Play Console product, no in-app price is hardcoded. iOS
+  purchases aren't implemented (backend fails closed with 501), and the
+  billing loop hasn't been tested against a live Play Console product yet.
 - **Privacy policy**: a draft is at `docs/privacy-policy.md`, matched to what
   the app actually collects today. It has bracketed placeholders (company
   name, support email, retention window) and needs a lawyer's review before
@@ -186,8 +233,17 @@ Google Play Console account ($25 one-time) before step 5 will succeed.
   stores require a live privacy policy URL to accept a submission.
 - **Camera-based form feedback**: explicitly deferred to Phase 2 per the spec;
   no pose-estimation architecture has been stubbed yet.
-- **Brand/visual design**: functional dark theme in `apps/mobile/src/theme.ts`,
-  not a designed brand identity.
+- **Brand/visual design**: `apps/mobile/assets/` has a real generated icon
+  (a bold stick-figure mark reusing the same math as the in-app exercise
+  animations - see `apps/mobile/scripts/icons/` to regenerate it) and a
+  functional dark theme in `apps/mobile/src/theme.ts`, but neither has had
+  a design pass from an actual designer.
+- **Play Store submission prep**: `docs/play-store-listing.md` (short/full
+  description, category - character-counted against Play's real limits) and
+  `docs/play-data-safety.md` (a mapping from what the app actually collects
+  to Play's Data Safety form categories, so filling out the real form is
+  fast). Both still need graphics (feature graphic, real screenshots) that
+  can't be produced without a working build or your sign-off on layout.
 
 ## Proof the adaptation actually works
 

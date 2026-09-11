@@ -9,6 +9,7 @@ import { feedbackRouter } from "./routes/feedback";
 import { logsRouter } from "./routes/logs";
 import { coachRouter } from "./routes/coach";
 import { progressRouter } from "./routes/progress";
+import { billingRouter } from "./routes/billing";
 
 const app = express();
 app.use(cors());
@@ -27,6 +28,7 @@ app.use("/api/feedback", feedbackRouter);
 app.use("/api/logs", logsRouter);
 app.use("/api/coach", coachRouter);
 app.use("/api/progress", progressRouter);
+app.use("/api/billing", billingRouter);
 
 const port = Number(process.env.PORT ?? 4000);
 app.listen(port, () => {

@@ -19,6 +19,7 @@ function toUser(row: {
   minutesPerSession: number;
   daysPerWeek: number;
   subscriptionStatus: string;
+  subscriptionExpiresAt: Date | null;
   coachMemorySummary: string | null;
 }): User {
   return {
@@ -31,6 +32,7 @@ function toUser(row: {
     minutesPerSession: row.minutesPerSession,
     daysPerWeek: row.daysPerWeek,
     subscriptionStatus: row.subscriptionStatus as SubscriptionStatus,
+    subscriptionExpiresAt: row.subscriptionExpiresAt?.toISOString() ?? null,
     coachMemorySummary: row.coachMemorySummary,
   };
 }

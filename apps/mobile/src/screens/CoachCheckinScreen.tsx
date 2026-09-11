@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { useApi } from "../api/useApi";
+import { useSubscription } from "../billing/useSubscription";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { colors, radius, spacing } from "../theme";
 
@@ -20,19 +21,35 @@ interface ChatMessage {
 }
 
 // Pricing model (spec section 9): plan generation + adaptation are free;
-// the conversational coach is the paid layer. No payment flow is wired up
-// yet (pricing numbers weren't specified), so this just gates the chat UI
-// behind subscriptionStatus and points at a not-yet-built upgrade flow.
-function Paywall() {
+// the conversational coach is the paid layer, sold as a Google Play
+// subscription (see src/billing/useSubscription.ts). iOS purchases aren't
+// wired up yet - the backend fails closed on that platform - so this falls
+// back to a "not available yet" message there instead of a live button.
+function Paywall({ onVerified }: { onVerified: () => void }) {
+  const { isAndroid, displayPrice, state, error, subscribe } = useSubscription(onVerified);
+
   return (
     <View style={styles.paywall}>
       <Text style={styles.paywallTitle}>Unlock the check-in coach</Text>
       <Text style={styles.paywallBody}>
         Free AdaptFit already adapts your plan around pain and feedback. The conversational
         coach - chatting before each session to adjust it on the fly - is part of AdaptFit
-        Plus. Upgrade to unlock it.
+        Plus{displayPrice ? ` (${displayPrice}/month)` : ""}.
       </Text>
-      <PrimaryButton title="Upgrade (coming soon)" onPress={() => {}} disabled />
+      {isAndroid ? (
+        <>
+          <PrimaryButton
+            title={state === "purchasing" || state === "verifying" ? "Processing..." : "Subscribe"}
+            onPress={subscribe}
+            disabled={state === "purchasing" || state === "verifying"}
+          />
+          {state === "error" && error && <Text style={styles.paywallError}>{error}</Text>}
+        </>
+      ) : (
+        <Text style={styles.paywallError}>
+          AdaptFit Plus is currently only available on Android. iOS support is coming soon.
+        </Text>
+      )}
     </View>
   );
 }
@@ -50,9 +67,11 @@ export function CoachCheckinScreen() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
 
-  useEffect(() => {
+  const refreshSubscriptionStatus = () => {
     api.getMe().then((user) => setSubscriptionStatus(user.subscriptionStatus));
-  }, [api]);
+  };
+
+  useEffect(refreshSubscriptionStatus, [api]);
 
   const send = async () => {
     if (!input.trim() || sending) return;
@@ -86,7 +105,7 @@ export function CoachCheckinScreen() {
   }
 
   if (subscriptionStatus !== "active") {
-    return <Paywall />;
+    return <Paywall onVerified={refreshSubscriptionStatus} />;
   }
 
   return (
@@ -158,4 +177,5 @@ const styles = StyleSheet.create({
   },
   paywallTitle: { color: colors.text, fontSize: 22, fontWeight: "700", textAlign: "center" },
   paywallBody: { color: colors.textMuted, fontSize: 14, textAlign: "center", lineHeight: 20 },
+  paywallError: { color: colors.danger, fontSize: 13, textAlign: "center" },
 });

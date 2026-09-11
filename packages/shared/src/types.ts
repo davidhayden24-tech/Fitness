@@ -36,6 +36,7 @@ export interface User {
   minutesPerSession: number;
   daysPerWeek: number;
   subscriptionStatus: SubscriptionStatus;
+  subscriptionExpiresAt: string | null;
   coachMemorySummary: string | null;
 }
 

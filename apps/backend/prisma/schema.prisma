@@ -41,6 +41,9 @@ model User {
   minutesPerSession    Int      @default(30)
   daysPerWeek          Int      @default(4)
   subscriptionStatus   String   @default("free")
+  subscriptionProductId     String? // e.g. "adaptfit_plus_monthly" - see @adaptfit/shared ADAPTFIT_PLUS_SKU
+  subscriptionExpiresAt     DateTime? // from Google Play's lineItems[].expiryTime / App Store equivalent
+  subscriptionPurchaseToken String?  @unique // idempotency key - the same token should never apply to two users
   coachMemorySummary   String? // rolling summary of recurring complaints/preferences
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt

@@ -94,6 +94,12 @@ export function createApi(getToken: GetToken) {
         adaptationsCount: number;
         recentAdaptations: { originalExerciseId: string; substituteExerciseId: string; trigger: string; timestamp: string }[];
       }>("/api/progress/me"),
+
+    verifySubscriptionPurchase: (platform: "android" | "ios", purchaseToken: string) =>
+      request<{ subscriptionStatus: string; subscriptionExpiresAt: string | null }>(
+        "/api/billing/verify",
+        { method: "POST", body: JSON.stringify({ platform, purchaseToken }) }
+      ),
   };
 }
 
