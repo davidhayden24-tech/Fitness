@@ -11,7 +11,7 @@
       "bundleIdentifier": "com.adaptfit.app"
     },
     "android": {
-      "package": "com.daithi21.adaptfit",
+      "package": "com.daithi_21.adaptfit",
       "adaptiveIcon": {
         "backgroundColor": "#5BE49B",
         "foregroundImage": "./assets/android-icon-foreground.png",

@@ -132,7 +132,7 @@ Before your first build:
 2. **Replace the placeholders** - these were left as placeholders on purpose,
    not real values:
    - `apps/mobile/app.json` -> `android.package` is registered on Play Console
-     as `com.daithi21.adaptfit` (kept in sync with `ANDROID_PACKAGE_NAME` in
+     as `com.daithi_21.adaptfit` (kept in sync with `ANDROID_PACKAGE_NAME` in
      `apps/backend/src/services/billingService.ts`). `ios.bundleIdentifier`
      is still the `com.adaptfit.app` placeholder - pick a real one before
      your first App Store submission. Both platforms treat this as a
@@ -187,7 +187,7 @@ app call `finishTransaction` to acknowledge the purchase with Play.
    contents* of that key file (not a file path) - see `.env.example`.
 4. Confirm `ANDROID_PACKAGE_NAME` in `apps/backend/src/services/billingService.ts`
    matches `apps/mobile/app.json` -> `android.package` (both set to
-   `com.daithi21.adaptfit`, the package registered on Play Console).
+   `com.daithi_21.adaptfit`, the package registered on Play Console).
 
 **Verification confidence - read before trusting this blindly:** this is
 the one piece of this build I could not test end-to-end. `react-native-iap`
