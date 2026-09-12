@@ -162,6 +162,22 @@ export function ExerciseAnimation({ pattern, size = 140, color = colors.primary 
         <AnimatedG x={points.head.x} y={points.head.y} rotation={angles.torsoAngle}>
           <Circle cx={-r * 0.3} cy={-r * 0.35} r={r * 1.05} fill={HAIR} />
           <Circle cx={0} cy={0} r={r} fill={SKIN} stroke={OUTLINE} strokeWidth={1.6} />
+          <Path
+            d={`M ${r * 0.05},${-r * 0.42} Q ${r * 0.35},${-r * 0.62} ${r * 0.62},${-r * 0.35}`}
+            stroke={HAIR}
+            strokeWidth={1.4}
+            fill="none"
+            strokeLinecap="round"
+          />
+          <Circle cx={r * 0.38} cy={-r * 0.05} r={r * 0.24} fill="white" />
+          <Circle cx={r * 0.44} cy={-r * 0.05} r={r * 0.13} fill={HAIR} />
+          <Path
+            d={`M ${r * 0.1},${r * 0.32} Q ${r * 0.38},${r * 0.56} ${r * 0.62},${r * 0.28}`}
+            stroke={HAIR}
+            strokeWidth={1.4}
+            fill="none"
+            strokeLinecap="round"
+          />
         </AnimatedG>
       </Svg>
     </View>
