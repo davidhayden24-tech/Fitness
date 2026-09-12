@@ -3,11 +3,10 @@ import { Animated, Easing, StyleSheet, View } from "react-native";
 import Svg, { Circle, Defs, G, LinearGradient, Path, Stop } from "react-native-svg";
 import { computeSkeleton, LENGTHS, type Skeleton } from "../animations/pose";
 import { PATTERNS, type AnimationPattern } from "../animations/patterns";
-import { HAND_PATH, LIMB_PATHS } from "../animations/limbShapes";
+import { HAND_PATH, LIMB_PATHS, SHOE_PATH, SOLE_PATH } from "../animations/limbShapes";
 import { colors } from "../theme";
 
 const AnimatedG = Animated.createAnimatedComponent(G);
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 const VIEW_W = 120;
 const VIEW_H = 160;
@@ -150,8 +149,16 @@ export function ExerciseAnimation({ pattern, size = 140, color = colors.primary 
           <Path d={LIMB_PATHS.shin} fill={SKIN} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
           <Path d={LIMB_PATHS.shin} fill="url(#shade)" />
         </AnimatedG>
-        <AnimatedCircle cx={points.leftFoot.x} cy={points.leftFoot.y} r={4.5} fill={colors.text} stroke={OUTLINE} strokeWidth={1.2} />
-        <AnimatedCircle cx={points.rightFoot.x} cy={points.rightFoot.y} r={4.5} fill={colors.text} stroke={OUTLINE} strokeWidth={1.2} />
+        <AnimatedG x={points.leftFoot.x} y={points.leftFoot.y} rotation={angles.leftKneeAngle}>
+          <Path d={SHOE_PATH} fill={colors.text} stroke={OUTLINE} strokeWidth={1.3} strokeLinejoin="round" />
+          <Path d={SOLE_PATH} fill={SHORTS} stroke={OUTLINE} strokeWidth={1} strokeLinejoin="round" />
+          <Path d={SHOE_PATH} fill="url(#shade)" />
+        </AnimatedG>
+        <AnimatedG x={points.rightFoot.x} y={points.rightFoot.y} rotation={angles.rightKneeAngle}>
+          <Path d={SHOE_PATH} fill={colors.text} stroke={OUTLINE} strokeWidth={1.3} strokeLinejoin="round" />
+          <Path d={SOLE_PATH} fill={SHORTS} stroke={OUTLINE} strokeWidth={1} strokeLinejoin="round" />
+          <Path d={SHOE_PATH} fill="url(#shade)" />
+        </AnimatedG>
 
         <AnimatedG x={points.hip.x} y={points.hip.y} rotation={angles.torsoAngle}>
           <Path d={LIMB_PATHS.torso} fill={color} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />

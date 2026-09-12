@@ -46,20 +46,26 @@ function roundedCap(radius: number, samples = 6): string {
 // extends along local -Y for `length` (matching pose.ts's `extend()`
 // convention, where an absolute angle of 0 points "up"/-Y), so rotating
 // and translating the wrapping <G> to a joint's position/angle places
-// the shape correctly with no further trig needed at render time.
-function limbPath(length: number, widthAt: (t: number) => number, samples = 9): string {
+// the shape correctly with no further trig needed at render time. The
+// left and right edges take independent profiles so lopsided shapes
+// (a shoe's flatter sole vs. its curved instep) are possible, not just
+// mirrored ones.
+function asymmetricPath(length: number, leftAt: (t: number) => number, rightAt: (t: number) => number, capRadius: number, samples = 9): string {
   const left: Point[] = [];
   const right: Point[] = [];
   for (let i = 0; i <= samples; i++) {
     const t = i / samples;
-    const w = widthAt(t);
     const y = -t * length;
-    left.push({ x: -w, y });
-    right.push({ x: w, y });
+    left.push({ x: -leftAt(t), y });
+    right.push({ x: rightAt(t), y });
   }
   const leftPath = smoothSide(left);
   const rightPath = smoothSide(right.slice().reverse()).replace("M", "L");
-  return `${leftPath} ${rightPath} ${roundedCap(widthAt(0))} Z`;
+  return `${leftPath} ${rightPath} ${roundedCap(capRadius)} Z`;
+}
+
+function limbPath(length: number, widthAt: (t: number) => number, samples = 9): string {
+  return asymmetricPath(length, widthAt, widthAt, widthAt(0), samples);
 }
 
 // A soft bulge-then-taper half-width curve: rises from `base` to `peak`
@@ -128,3 +134,22 @@ function handPath(): string {
 }
 
 export const HAND_PATH = handPath();
+
+// A simple sneaker silhouette instead of a plain dot: an asymmetric
+// shape (curved instep on one side, wider sole on the other, both
+// bulging near the ball of the foot before narrowing to a rounded toe)
+// extending from the ankle in the same direction the shin already
+// points - there's no separate ankle-angle field in Pose, so this reuses
+// the shin's own rotation, the same approximation used for the hand off
+// the forearm's angle.
+const SHOE_LENGTH = 7.5;
+const shoeInstep = bulge(2.2, 2.6, 0.35, 1.3);
+const shoeSole = bulge(3, 4.2, 0.45, 1.6);
+const SHOE_CAP_RADIUS = 2.8;
+
+export const SHOE_PATH = asymmetricPath(SHOE_LENGTH, shoeInstep, shoeSole, SHOE_CAP_RADIUS);
+
+// A darker sole layered on top of SHOE_PATH along its exact bottom edge
+// (same `shoeSole` profile and cap radius, just a shallower instep-side
+// edge) for a simple two-tone sneaker look.
+export const SOLE_PATH = asymmetricPath(SHOE_LENGTH, () => 0.4, shoeSole, SHOE_CAP_RADIUS);
