@@ -4,7 +4,7 @@
 // only the wrapping <G>'s position/rotation animates per frame.
 import { LENGTHS } from "./pose";
 
-export type LimbName = "torso" | "upperArm" | "forearm" | "thigh" | "shin";
+export type LimbName = "torso" | "upperArm" | "forearm" | "thigh" | "shin" | "neck";
 
 interface Point {
   x: number;
@@ -83,12 +83,20 @@ function bulge(base: number, peak: number, peakAt: number, tip: number) {
   };
 }
 
+// The gap pose.ts leaves between the shoulder and the head - `extend(
+// shoulder, torsoAngle, headRadius * 1.4)` - was previously empty (the
+// head circle, radius headRadius, doesn't reach all the way back down to
+// the shoulder), so the head looked like it was floating. NECK_LENGTH
+// matches that same distance so this limb exactly fills it.
+const NECK_LENGTH = LENGTHS.headRadius * 1.4;
+
 const WIDTH_PROFILES: Record<LimbName, (t: number) => number> = {
   torso: bulge(6.5, 7, 0.3, 9),
   upperArm: bulge(5.2, 6.4, 0.4, 3.6),
   forearm: bulge(4.4, 4.6, 0.2, 2.4),
   thigh: bulge(7, 8.5, 0.4, 5),
   shin: bulge(5.2, 6.2, 0.25, 2.8),
+  neck: bulge(3.6, 3.8, 0.3, 4.2),
 };
 
 export const LIMB_PATHS: Record<LimbName, string> = {
@@ -97,6 +105,7 @@ export const LIMB_PATHS: Record<LimbName, string> = {
   forearm: limbPath(LENGTHS.forearm, WIDTH_PROFILES.forearm),
   thigh: limbPath(LENGTHS.thigh, WIDTH_PROFILES.thigh),
   shin: limbPath(LENGTHS.shin, WIDTH_PROFILES.shin),
+  neck: limbPath(NECK_LENGTH, WIDTH_PROFILES.neck),
 };
 
 // A small hand silhouette (palm + three simplified fingers - a full five

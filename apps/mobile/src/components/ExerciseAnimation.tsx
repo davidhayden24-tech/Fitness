@@ -189,6 +189,15 @@ export function ExerciseAnimation({ pattern, size = 140, color = colors.primary 
           <Path d={HAND_PATH} fill="url(#shade)" />
         </AnimatedG>
 
+        {/* Neck: fills the gap pose.ts leaves between the shoulder and
+            the head (the head circle doesn't reach down to the shoulder
+            on its own), so it shares the torso's own rotation and sits
+            at the shoulder joint just like the torso does at the hip. */}
+        <AnimatedG x={points.shoulder.x} y={points.shoulder.y} rotation={angles.torsoAngle}>
+          <Path d={LIMB_PATHS.neck} fill={SKIN} stroke={OUTLINE} strokeWidth={1.4} strokeLinejoin="round" />
+          <Path d={LIMB_PATHS.neck} fill="url(#shade)" />
+        </AnimatedG>
+
         {/* Head + hair: an offset hair-colored circle drawn behind the
             skin circle leaves a natural crescent showing through on one
             side - simpler and more robust than hand-authoring a
