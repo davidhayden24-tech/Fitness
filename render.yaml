@@ -33,5 +33,7 @@ services:
         sync: false # from the Clerk dashboard - the server won't boot without this
       - key: CLERK_SECRET_KEY
         sync: false
+      - key: GOOGLE_PLAY_SERVICE_ACCOUNT_JSON
+        sync: false # raw JSON from the Google Cloud service account, not a file path
       - key: PORT
         value: 4000
