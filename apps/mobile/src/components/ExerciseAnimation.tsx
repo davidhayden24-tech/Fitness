@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from "react";
-import { Animated, StyleSheet, View } from "react-native";
+import { Animated, Easing, StyleSheet, View } from "react-native";
 import Svg, { Circle, G, Path } from "react-native-svg";
 import { computeSkeleton, LENGTHS, type Skeleton } from "../animations/pose";
 import { PATTERNS, type AnimationPattern } from "../animations/patterns";
@@ -55,13 +55,17 @@ const OUTLINE = "#12141A";
 /**
  * A stylized, looping "illustrated athlete" animation standing in for real
  * exercise video/animation (see apps/backend/src/data/exercises.ts -
- * videoAssetRef is still null for every seeded exercise). Two keyframe
- * poses per movement pattern (patterns.ts) drive both a joint-position
- * skeleton (computeSkeleton, for placing round joint accents) and, more
- * importantly, each limb's own rotation angle - the Pose fields are
- * already absolute angles (pose.ts), so no trig is needed to animate
- * them: a plain linear interpolation from the pose-A angle to the pose-B
- * angle is exactly the rotation to feed a <G rotation={...}>. Each limb's
+ * videoAssetRef is still null for every seeded exercise). Each movement
+ * pattern (patterns.ts) is a sequence of 3+ keyframe poses, not just a
+ * start/end pair - `progress` sweeps through them as a multi-stop
+ * piecewise-linear interpolation (Animated.interpolate natively supports
+ * >2-point inputRange/outputRange), so the motion actually passes through
+ * the in-between poses instead of blending only two extremes. This drives
+ * both a joint-position skeleton (computeSkeleton, for placing round
+ * joint accents) and, more importantly, each limb's own rotation angle -
+ * the Pose fields are already absolute angles (pose.ts), so no trig is
+ * needed to animate them: interpolating from one keyframe's angle to the
+ * next is exactly the rotation to feed a <G rotation={...}>. Each limb's
  * silhouette (limbShapes.ts) is a precomputed, static path drawn in local
  * space with its proximal joint at the origin; the wrapping <G>'s
  * animated x/y (joint position) and rotation place it correctly every
@@ -70,11 +74,15 @@ const OUTLINE = "#12141A";
 export function ExerciseAnimation({ pattern, size = 140, color = colors.primary }: Props) {
   const progress = useRef(new Animated.Value(0)).current;
 
+  const keyframes = useMemo(() => PATTERNS[pattern], [pattern]);
+  const lastIndex = keyframes.length - 1;
+
   useEffect(() => {
+    const easing = Easing.inOut(Easing.quad);
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.timing(progress, { toValue: 1, duration: CYCLE_MS, useNativeDriver: false }),
-        Animated.timing(progress, { toValue: 0, duration: CYCLE_MS, useNativeDriver: false }),
+        Animated.timing(progress, { toValue: lastIndex, duration: CYCLE_MS, easing, useNativeDriver: false }),
+        Animated.timing(progress, { toValue: 0, duration: CYCLE_MS, easing, useNativeDriver: false }),
       ])
     );
     loop.start();
@@ -82,31 +90,29 @@ export function ExerciseAnimation({ pattern, size = 140, color = colors.primary 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pattern]);
 
-  const { poseA, poseB, a, b } = useMemo(() => {
-    const [poseA, poseB] = PATTERNS[pattern];
-    return { poseA, poseB, a: computeSkeleton(poseA), b: computeSkeleton(poseB) };
-  }, [pattern]);
+  const skeletons = useMemo(() => keyframes.map(computeSkeleton), [keyframes]);
+  const stops = useMemo(() => keyframes.map((_, i) => i), [keyframes]);
 
   const points = useMemo(() => {
     const result: Record<PointKey, { x: Animated.AnimatedInterpolation<number>; y: Animated.AnimatedInterpolation<number> }> = {} as never;
     for (const key of POINT_KEYS) {
       result[key] = {
-        x: progress.interpolate({ inputRange: [0, 1], outputRange: [a[key].x, b[key].x] }),
-        y: progress.interpolate({ inputRange: [0, 1], outputRange: [a[key].y, b[key].y] }),
+        x: progress.interpolate({ inputRange: stops, outputRange: skeletons.map((s) => s[key].x) }),
+        y: progress.interpolate({ inputRange: stops, outputRange: skeletons.map((s) => s[key].y) }),
       };
     }
     return result;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [a, b]);
+  }, [skeletons, stops]);
 
   const angles = useMemo(() => {
     const result: Record<AngleKey, Animated.AnimatedInterpolation<number>> = {} as never;
     for (const key of ANGLE_KEYS) {
-      result[key] = progress.interpolate({ inputRange: [0, 1], outputRange: [poseA[key], poseB[key]] });
+      result[key] = progress.interpolate({ inputRange: stops, outputRange: keyframes.map((p) => p[key]) });
     }
     return result;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [poseA, poseB]);
+  }, [keyframes, stops]);
 
   const r = LENGTHS.headRadius;
 
