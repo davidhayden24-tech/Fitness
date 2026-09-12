@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import { Animated, Easing, StyleSheet, View } from "react-native";
-import Svg, { Circle, G, Path } from "react-native-svg";
+import Svg, { Circle, Defs, G, LinearGradient, Path, Stop } from "react-native-svg";
 import { computeSkeleton, LENGTHS, type Skeleton } from "../animations/pose";
 import { PATTERNS, type AnimationPattern } from "../animations/patterns";
 import { LIMB_PATHS } from "../animations/limbShapes";
@@ -119,44 +119,72 @@ export function ExerciseAnimation({ pattern, size = 140, color = colors.primary 
   return (
     <View style={styles.container}>
       <Svg width={size} height={(size * VIEW_H) / VIEW_W} viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}>
+        {/* A generic light-to-dark overlay, painted on top of every solid
+            shape's own bounding box (default objectBoundingBox units), to
+            fake a rounded/cylindrical cross-section instead of a flat
+            cartoon fill - independent of the shape's own base color, so
+            it works for skin, outfit and shorts alike. */}
+        <Defs>
+          <LinearGradient id="shade" x1="0" y1="0" x2="1" y2="0.15">
+            <Stop offset="0" stopColor="#FFFFFF" stopOpacity={0.32} />
+            <Stop offset="0.5" stopColor="#FFFFFF" stopOpacity={0} />
+            <Stop offset="1" stopColor="#000000" stopOpacity={0.28} />
+          </LinearGradient>
+        </Defs>
+
         {/* Legs behind the torso/arms, so the hip and shoulder joints
             layer naturally on top of them. */}
         <AnimatedG x={points.hip.x} y={points.hip.y} rotation={angles.leftHipAngle}>
           <Path d={LIMB_PATHS.thigh} fill={SHORTS} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
+          <Path d={LIMB_PATHS.thigh} fill="url(#shade)" />
         </AnimatedG>
         <AnimatedG x={points.hip.x} y={points.hip.y} rotation={angles.rightHipAngle}>
           <Path d={LIMB_PATHS.thigh} fill={SHORTS} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
+          <Path d={LIMB_PATHS.thigh} fill="url(#shade)" />
         </AnimatedG>
         <AnimatedCircle cx={points.leftKnee.x} cy={points.leftKnee.y} r={4.5} fill={SKIN} stroke={OUTLINE} strokeWidth={1.2} />
+        <AnimatedCircle cx={points.leftKnee.x} cy={points.leftKnee.y} r={4.5} fill="url(#shade)" />
         <AnimatedCircle cx={points.rightKnee.x} cy={points.rightKnee.y} r={4.5} fill={SKIN} stroke={OUTLINE} strokeWidth={1.2} />
+        <AnimatedCircle cx={points.rightKnee.x} cy={points.rightKnee.y} r={4.5} fill="url(#shade)" />
         <AnimatedG x={points.leftKnee.x} y={points.leftKnee.y} rotation={angles.leftKneeAngle}>
           <Path d={LIMB_PATHS.shin} fill={SKIN} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
+          <Path d={LIMB_PATHS.shin} fill="url(#shade)" />
         </AnimatedG>
         <AnimatedG x={points.rightKnee.x} y={points.rightKnee.y} rotation={angles.rightKneeAngle}>
           <Path d={LIMB_PATHS.shin} fill={SKIN} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
+          <Path d={LIMB_PATHS.shin} fill="url(#shade)" />
         </AnimatedG>
         <AnimatedCircle cx={points.leftFoot.x} cy={points.leftFoot.y} r={4.5} fill={colors.text} stroke={OUTLINE} strokeWidth={1.2} />
         <AnimatedCircle cx={points.rightFoot.x} cy={points.rightFoot.y} r={4.5} fill={colors.text} stroke={OUTLINE} strokeWidth={1.2} />
 
         <AnimatedCircle cx={points.hip.x} cy={points.hip.y} r={6} fill={SHORTS} stroke={OUTLINE} strokeWidth={1.2} />
+        <AnimatedCircle cx={points.hip.x} cy={points.hip.y} r={6} fill="url(#shade)" />
         <AnimatedG x={points.hip.x} y={points.hip.y} rotation={angles.torsoAngle}>
           <Path d={LIMB_PATHS.torso} fill={color} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
+          <Path d={LIMB_PATHS.torso} fill="url(#shade)" />
         </AnimatedG>
         <AnimatedCircle cx={points.shoulder.x} cy={points.shoulder.y} r={7} fill={color} stroke={OUTLINE} strokeWidth={1.2} />
+        <AnimatedCircle cx={points.shoulder.x} cy={points.shoulder.y} r={7} fill="url(#shade)" />
 
         <AnimatedG x={points.shoulder.x} y={points.shoulder.y} rotation={angles.leftShoulderAngle}>
           <Path d={LIMB_PATHS.upperArm} fill={color} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
+          <Path d={LIMB_PATHS.upperArm} fill="url(#shade)" />
         </AnimatedG>
         <AnimatedG x={points.shoulder.x} y={points.shoulder.y} rotation={angles.rightShoulderAngle}>
           <Path d={LIMB_PATHS.upperArm} fill={color} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
+          <Path d={LIMB_PATHS.upperArm} fill="url(#shade)" />
         </AnimatedG>
         <AnimatedCircle cx={points.leftElbow.x} cy={points.leftElbow.y} r={4} fill={SKIN} stroke={OUTLINE} strokeWidth={1.2} />
+        <AnimatedCircle cx={points.leftElbow.x} cy={points.leftElbow.y} r={4} fill="url(#shade)" />
         <AnimatedCircle cx={points.rightElbow.x} cy={points.rightElbow.y} r={4} fill={SKIN} stroke={OUTLINE} strokeWidth={1.2} />
+        <AnimatedCircle cx={points.rightElbow.x} cy={points.rightElbow.y} r={4} fill="url(#shade)" />
         <AnimatedG x={points.leftElbow.x} y={points.leftElbow.y} rotation={angles.leftElbowAngle}>
           <Path d={LIMB_PATHS.forearm} fill={SKIN} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
+          <Path d={LIMB_PATHS.forearm} fill="url(#shade)" />
         </AnimatedG>
         <AnimatedG x={points.rightElbow.x} y={points.rightElbow.y} rotation={angles.rightElbowAngle}>
           <Path d={LIMB_PATHS.forearm} fill={SKIN} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
+          <Path d={LIMB_PATHS.forearm} fill="url(#shade)" />
         </AnimatedG>
         <AnimatedCircle cx={points.leftHand.x} cy={points.leftHand.y} r={3.2} fill={SKIN} stroke={OUTLINE} strokeWidth={1} />
         <AnimatedCircle cx={points.rightHand.x} cy={points.rightHand.y} r={3.2} fill={SKIN} stroke={OUTLINE} strokeWidth={1} />
@@ -168,6 +196,7 @@ export function ExerciseAnimation({ pattern, size = 140, color = colors.primary 
         <AnimatedG x={points.head.x} y={points.head.y} rotation={angles.torsoAngle}>
           <Circle cx={-r * 0.3} cy={-r * 0.35} r={r * 1.05} fill={HAIR} />
           <Circle cx={0} cy={0} r={r} fill={SKIN} stroke={OUTLINE} strokeWidth={1.6} />
+          <Circle cx={0} cy={0} r={r} fill="url(#shade)" />
           <Path
             d={`M ${r * 0.05},${-r * 0.42} Q ${r * 0.35},${-r * 0.62} ${r * 0.62},${-r * 0.35}`}
             stroke={HAIR}

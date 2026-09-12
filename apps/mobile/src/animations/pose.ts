@@ -32,12 +32,16 @@ export const POSE_FIELDS: (keyof Pose)[] = [
   "rightKneeAngle",
 ];
 
+// Roughly a 6-head-tall figure (head radius unchanged, limbs lengthened)
+// rather than the ~4.8-head "chibi" ratio these started at - closer to
+// natural adult body proportions while staying well within a size this
+// rig can still render cleanly.
 export const LENGTHS = {
-  torso: 34,
-  upperArm: 20,
-  forearm: 18,
-  thigh: 24,
-  shin: 22,
+  torso: 42,
+  upperArm: 25,
+  forearm: 22,
+  thigh: 30,
+  shin: 27,
   headRadius: 11,
 };
 
