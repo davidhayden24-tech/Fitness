@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import { Animated, StyleSheet, View } from "react-native";
-import Svg, { Circle, Line } from "react-native-svg";
+import Svg, { Circle, G, Path } from "react-native-svg";
 import { computeSkeleton, LENGTHS, type Skeleton } from "../animations/pose";
 import { PATTERNS, type AnimationPattern } from "../animations/patterns";
+import { LIMB_PATHS } from "../animations/limbShapes";
 import { colors } from "../theme";
 
-const AnimatedLine = Animated.createAnimatedComponent(Line);
+const AnimatedG = Animated.createAnimatedComponent(G);
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 const VIEW_W = 120;
@@ -33,35 +34,38 @@ const POINT_KEYS: PointKey[] = [
   "rightFoot",
 ];
 
+type AngleKey = "torsoAngle" | "leftShoulderAngle" | "rightShoulderAngle" | "leftElbowAngle" | "rightElbowAngle" | "leftHipAngle" | "rightHipAngle" | "leftKneeAngle" | "rightKneeAngle";
+const ANGLE_KEYS: AngleKey[] = [
+  "torsoAngle",
+  "leftShoulderAngle",
+  "rightShoulderAngle",
+  "leftElbowAngle",
+  "rightElbowAngle",
+  "leftHipAngle",
+  "rightHipAngle",
+  "leftKneeAngle",
+  "rightKneeAngle",
+];
+
 const SKIN = "#D9A066";
 const SHORTS = "#2A2E38";
+const HAIR = "#12141A";
 const OUTLINE = "#12141A";
 
-// Outfit-colored segments (shirt torso + sleeves/shorts) are drawn wider
-// than the bare-skin segments (forearms/shins), and legs are drawn before
-// the torso/arms so shoulder and hip joints layer naturally on top.
-const BONES: { from: PointKey; to: PointKey; color: "outfit" | "shorts" | "skin"; width: number }[] = [
-  { from: "hip", to: "leftKnee", color: "shorts", width: 13 },
-  { from: "hip", to: "rightKnee", color: "shorts", width: 13 },
-  { from: "leftKnee", to: "leftFoot", color: "skin", width: 9 },
-  { from: "rightKnee", to: "rightFoot", color: "skin", width: 9 },
-  { from: "hip", to: "shoulder", color: "outfit", width: 16 },
-  { from: "shoulder", to: "leftElbow", color: "outfit", width: 10 },
-  { from: "shoulder", to: "rightElbow", color: "outfit", width: 10 },
-  { from: "leftElbow", to: "leftHand", color: "skin", width: 8 },
-  { from: "rightElbow", to: "rightHand", color: "skin", width: 8 },
-];
-const FEET: PointKey[] = ["leftFoot", "rightFoot"];
-
 /**
- * A stylized, looping stick-figure animation standing in for real exercise
- * video/animation (see apps/backend/src/data/exercises.ts - videoAssetRef is
- * still null for every seeded exercise). Two keyframe poses per movement
- * pattern (patterns.ts) are precomputed into pixel-space skeletons, then a
- * single Animated.Value interpolates every joint's x/y between them and
- * back, forever. Interpolating pre-computed positions - rather than
- * animating joint angles and deriving sin/cos per frame - sidesteps that
- * RN's Animated API has no trig functions.
+ * A stylized, looping "illustrated athlete" animation standing in for real
+ * exercise video/animation (see apps/backend/src/data/exercises.ts -
+ * videoAssetRef is still null for every seeded exercise). Two keyframe
+ * poses per movement pattern (patterns.ts) drive both a joint-position
+ * skeleton (computeSkeleton, for placing round joint accents) and, more
+ * importantly, each limb's own rotation angle - the Pose fields are
+ * already absolute angles (pose.ts), so no trig is needed to animate
+ * them: a plain linear interpolation from the pose-A angle to the pose-B
+ * angle is exactly the rotation to feed a <G rotation={...}>. Each limb's
+ * silhouette (limbShapes.ts) is a precomputed, static path drawn in local
+ * space with its proximal joint at the origin; the wrapping <G>'s
+ * animated x/y (joint position) and rotation place it correctly every
+ * frame with no per-frame path recomputation.
  */
 export function ExerciseAnimation({ pattern, size = 140, color = colors.primary }: Props) {
   const progress = useRef(new Animated.Value(0)).current;
@@ -78,9 +82,9 @@ export function ExerciseAnimation({ pattern, size = 140, color = colors.primary 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pattern]);
 
-  const { a, b } = useMemo(() => {
+  const { poseA, poseB, a, b } = useMemo(() => {
     const [poseA, poseB] = PATTERNS[pattern];
-    return { a: computeSkeleton(poseA), b: computeSkeleton(poseB) };
+    return { poseA, poseB, a: computeSkeleton(poseA), b: computeSkeleton(poseB) };
   }, [pattern]);
 
   const points = useMemo(() => {
@@ -95,47 +99,70 @@ export function ExerciseAnimation({ pattern, size = 140, color = colors.primary 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [a, b]);
 
-  const boneColor = { outfit: color, shorts: SHORTS, skin: SKIN };
+  const angles = useMemo(() => {
+    const result: Record<AngleKey, Animated.AnimatedInterpolation<number>> = {} as never;
+    for (const key of ANGLE_KEYS) {
+      result[key] = progress.interpolate({ inputRange: [0, 1], outputRange: [poseA[key], poseB[key]] });
+    }
+    return result;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [poseA, poseB]);
+
+  const r = LENGTHS.headRadius;
 
   return (
     <View style={styles.container}>
       <Svg width={size} height={(size * VIEW_H) / VIEW_W} viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}>
-        {/* Each bone's outline is drawn immediately before its own fill (not
-            all outlines first) so a later bone's outline cuts a visible
-            border into any earlier bone's fill where they cross - poses
-            viewed edge-on (a pushup's arms/torso, say) unavoidably overlap,
-            and without this they merge into a shapeless blob instead of
-            reading as separate limbs. */}
-        {BONES.map(({ from, to, color: tone, width }) => (
-          <React.Fragment key={`${from}-${to}`}>
-            <AnimatedLine
-              x1={points[from].x}
-              y1={points[from].y}
-              x2={points[to].x}
-              y2={points[to].y}
-              stroke={OUTLINE}
-              strokeWidth={width + 3}
-              strokeLinecap="round"
-            />
-            <AnimatedLine
-              x1={points[from].x}
-              y1={points[from].y}
-              x2={points[to].x}
-              y2={points[to].y}
-              stroke={boneColor[tone]}
-              strokeWidth={width}
-              strokeLinecap="round"
-            />
-          </React.Fragment>
-        ))}
-        <AnimatedCircle cx={points.head.x} cy={points.head.y} r={LENGTHS.headRadius + 1.5} fill={OUTLINE} />
-        <AnimatedCircle cx={points.head.x} cy={points.head.y} r={LENGTHS.headRadius} fill={SKIN} />
-        {FEET.map((key) => (
-          <React.Fragment key={key}>
-            <AnimatedCircle cx={points[key].x} cy={points[key].y} r={6.5} fill={OUTLINE} />
-            <AnimatedCircle cx={points[key].x} cy={points[key].y} r={5} fill={colors.text} />
-          </React.Fragment>
-        ))}
+        {/* Legs behind the torso/arms, so the hip and shoulder joints
+            layer naturally on top of them. */}
+        <AnimatedG x={points.hip.x} y={points.hip.y} rotation={angles.leftHipAngle}>
+          <Path d={LIMB_PATHS.thigh} fill={SHORTS} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
+        </AnimatedG>
+        <AnimatedG x={points.hip.x} y={points.hip.y} rotation={angles.rightHipAngle}>
+          <Path d={LIMB_PATHS.thigh} fill={SHORTS} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
+        </AnimatedG>
+        <AnimatedCircle cx={points.leftKnee.x} cy={points.leftKnee.y} r={4.5} fill={SKIN} stroke={OUTLINE} strokeWidth={1.2} />
+        <AnimatedCircle cx={points.rightKnee.x} cy={points.rightKnee.y} r={4.5} fill={SKIN} stroke={OUTLINE} strokeWidth={1.2} />
+        <AnimatedG x={points.leftKnee.x} y={points.leftKnee.y} rotation={angles.leftKneeAngle}>
+          <Path d={LIMB_PATHS.shin} fill={SKIN} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
+        </AnimatedG>
+        <AnimatedG x={points.rightKnee.x} y={points.rightKnee.y} rotation={angles.rightKneeAngle}>
+          <Path d={LIMB_PATHS.shin} fill={SKIN} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
+        </AnimatedG>
+        <AnimatedCircle cx={points.leftFoot.x} cy={points.leftFoot.y} r={4.5} fill={colors.text} stroke={OUTLINE} strokeWidth={1.2} />
+        <AnimatedCircle cx={points.rightFoot.x} cy={points.rightFoot.y} r={4.5} fill={colors.text} stroke={OUTLINE} strokeWidth={1.2} />
+
+        <AnimatedCircle cx={points.hip.x} cy={points.hip.y} r={6} fill={SHORTS} stroke={OUTLINE} strokeWidth={1.2} />
+        <AnimatedG x={points.hip.x} y={points.hip.y} rotation={angles.torsoAngle}>
+          <Path d={LIMB_PATHS.torso} fill={color} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
+        </AnimatedG>
+        <AnimatedCircle cx={points.shoulder.x} cy={points.shoulder.y} r={7} fill={color} stroke={OUTLINE} strokeWidth={1.2} />
+
+        <AnimatedG x={points.shoulder.x} y={points.shoulder.y} rotation={angles.leftShoulderAngle}>
+          <Path d={LIMB_PATHS.upperArm} fill={color} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
+        </AnimatedG>
+        <AnimatedG x={points.shoulder.x} y={points.shoulder.y} rotation={angles.rightShoulderAngle}>
+          <Path d={LIMB_PATHS.upperArm} fill={color} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
+        </AnimatedG>
+        <AnimatedCircle cx={points.leftElbow.x} cy={points.leftElbow.y} r={4} fill={SKIN} stroke={OUTLINE} strokeWidth={1.2} />
+        <AnimatedCircle cx={points.rightElbow.x} cy={points.rightElbow.y} r={4} fill={SKIN} stroke={OUTLINE} strokeWidth={1.2} />
+        <AnimatedG x={points.leftElbow.x} y={points.leftElbow.y} rotation={angles.leftElbowAngle}>
+          <Path d={LIMB_PATHS.forearm} fill={SKIN} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
+        </AnimatedG>
+        <AnimatedG x={points.rightElbow.x} y={points.rightElbow.y} rotation={angles.rightElbowAngle}>
+          <Path d={LIMB_PATHS.forearm} fill={SKIN} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
+        </AnimatedG>
+        <AnimatedCircle cx={points.leftHand.x} cy={points.leftHand.y} r={3.2} fill={SKIN} stroke={OUTLINE} strokeWidth={1} />
+        <AnimatedCircle cx={points.rightHand.x} cy={points.rightHand.y} r={3.2} fill={SKIN} stroke={OUTLINE} strokeWidth={1} />
+
+        {/* Head + hair: an offset hair-colored circle drawn behind the
+            skin circle leaves a natural crescent showing through on one
+            side - simpler and more robust than hand-authoring a
+            hair-shaped path. */}
+        <AnimatedG x={points.head.x} y={points.head.y} rotation={angles.torsoAngle}>
+          <Circle cx={-r * 0.3} cy={-r * 0.35} r={r * 1.05} fill={HAIR} />
+          <Circle cx={0} cy={0} r={r} fill={SKIN} stroke={OUTLINE} strokeWidth={1.6} />
+        </AnimatedG>
       </Svg>
     </View>
   );
