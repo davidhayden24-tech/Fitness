@@ -206,6 +206,12 @@ export function ExerciseAnimation({ pattern, size = 140, color = colors.primary 
           <Circle cx={-r * 0.3} cy={-r * 0.35} r={r * 1.05} fill={HAIR} />
           <Circle cx={0} cy={0} r={r} fill={SKIN} stroke={OUTLINE} strokeWidth={1.6} />
           <Circle cx={0} cy={0} r={r} fill="url(#shade)" />
+          <Circle cx={-r * 0.92} cy={r * 0.02} r={r * 0.24} fill={SKIN} stroke={OUTLINE} strokeWidth={1.3} />
+          <Circle cx={-r * 0.92} cy={r * 0.02} r={r * 0.24} fill="url(#shade)" />
+          <Circle cx={-r * 0.9} cy={r * 0.02} r={r * 0.09} fill="none" stroke={OUTLINE} strokeWidth={0.9} />
+          <Circle cx={r * 0.92} cy={r * 0.02} r={r * 0.24} fill={SKIN} stroke={OUTLINE} strokeWidth={1.3} />
+          <Circle cx={r * 0.92} cy={r * 0.02} r={r * 0.24} fill="url(#shade)" />
+          <Circle cx={r * 0.9} cy={r * 0.02} r={r * 0.09} fill="none" stroke={OUTLINE} strokeWidth={0.9} />
           <Path
             d={`M ${r * 0.05},${-r * 0.42} Q ${r * 0.35},${-r * 0.62} ${r * 0.62},${-r * 0.35}`}
             stroke={HAIR}
