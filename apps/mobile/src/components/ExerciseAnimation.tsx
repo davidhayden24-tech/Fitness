@@ -206,12 +206,34 @@ export function ExerciseAnimation({ pattern, size = 140, color = colors.primary 
           <Circle cx={-r * 0.3} cy={-r * 0.35} r={r * 1.05} fill={HAIR} />
           <Circle cx={0} cy={0} r={r} fill={SKIN} stroke={OUTLINE} strokeWidth={1.6} />
           <Circle cx={0} cy={0} r={r} fill="url(#shade)" />
-          <Circle cx={-r * 0.92} cy={r * 0.02} r={r * 0.24} fill={SKIN} stroke={OUTLINE} strokeWidth={1.3} />
-          <Circle cx={-r * 0.92} cy={r * 0.02} r={r * 0.24} fill="url(#shade)" />
-          <Circle cx={-r * 0.9} cy={r * 0.02} r={r * 0.09} fill="none" stroke={OUTLINE} strokeWidth={0.9} />
-          <Circle cx={r * 0.92} cy={r * 0.02} r={r * 0.24} fill={SKIN} stroke={OUTLINE} strokeWidth={1.3} />
-          <Circle cx={r * 0.92} cy={r * 0.02} r={r * 0.24} fill="url(#shade)" />
-          <Circle cx={r * 0.9} cy={r * 0.02} r={r * 0.09} fill="none" stroke={OUTLINE} strokeWidth={0.9} />
+          {/* One ear, on the side away from the face - the face patch
+              below is on the +x side, so a same-side ear would sit right
+              on top of the eyes, and a real side-on head only shows the
+              far ear anyway. A proper helix/lobe outline instead of a
+              plain circle, plus a short inner fold line. */}
+          <Path
+            d={`M ${r * -0.62},${r * -0.3}
+                Q ${r * -1.15},${r * -0.2} ${r * -1.22},${r * 0.08}
+                Q ${r * -1.25},${r * 0.3} ${r * -0.95},${r * 0.36}
+                Q ${r * -0.68},${r * 0.4} ${r * -0.6},${r * 0.16}
+                Q ${r * -0.55},${r * -0.02} ${r * -0.78},${r * -0.04}
+                Q ${r * -0.68},${r * -0.16} ${r * -0.62},${r * -0.3} Z`}
+            fill={SKIN}
+            stroke={OUTLINE}
+            strokeWidth={1.3}
+            strokeLinejoin="round"
+          />
+          <Path
+            d={`M ${r * -0.62},${r * -0.3} Q ${r * -1.15},${r * -0.2} ${r * -1.22},${r * 0.08} Q ${r * -1.25},${r * 0.3} ${r * -0.95},${r * 0.36} Q ${r * -0.68},${r * 0.4} ${r * -0.6},${r * 0.16} Q ${r * -0.55},${r * -0.02} ${r * -0.78},${r * -0.04} Q ${r * -0.68},${r * -0.16} ${r * -0.62},${r * -0.3} Z`}
+            fill="url(#shade)"
+          />
+          <Path
+            d={`M ${r * -1.02},${r * 0.02} Q ${r * -0.9},${r * 0.14} ${r * -0.76},${r * 0.08}`}
+            stroke={OUTLINE}
+            strokeWidth={0.9}
+            fill="none"
+            strokeLinecap="round"
+          />
           <Path
             d={`M ${r * 0.05},${-r * 0.42} Q ${r * 0.35},${-r * 0.62} ${r * 0.62},${-r * 0.35}`}
             stroke={HAIR}
