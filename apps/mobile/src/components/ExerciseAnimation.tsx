@@ -33,17 +33,25 @@ const POINT_KEYS: PointKey[] = [
   "rightFoot",
 ];
 
-const BONES: [PointKey, PointKey][] = [
-  ["hip", "shoulder"],
-  ["shoulder", "leftElbow"],
-  ["leftElbow", "leftHand"],
-  ["shoulder", "rightElbow"],
-  ["rightElbow", "rightHand"],
-  ["hip", "leftKnee"],
-  ["leftKnee", "leftFoot"],
-  ["hip", "rightKnee"],
-  ["rightKnee", "rightFoot"],
+const SKIN = "#D9A066";
+const SHORTS = "#2A2E38";
+const OUTLINE = "#12141A";
+
+// Outfit-colored segments (shirt torso + sleeves/shorts) are drawn wider
+// than the bare-skin segments (forearms/shins), and legs are drawn before
+// the torso/arms so shoulder and hip joints layer naturally on top.
+const BONES: { from: PointKey; to: PointKey; color: "outfit" | "shorts" | "skin"; width: number }[] = [
+  { from: "hip", to: "leftKnee", color: "shorts", width: 13 },
+  { from: "hip", to: "rightKnee", color: "shorts", width: 13 },
+  { from: "leftKnee", to: "leftFoot", color: "skin", width: 9 },
+  { from: "rightKnee", to: "rightFoot", color: "skin", width: 9 },
+  { from: "hip", to: "shoulder", color: "outfit", width: 16 },
+  { from: "shoulder", to: "leftElbow", color: "outfit", width: 10 },
+  { from: "shoulder", to: "rightElbow", color: "outfit", width: 10 },
+  { from: "leftElbow", to: "leftHand", color: "skin", width: 8 },
+  { from: "rightElbow", to: "rightHand", color: "skin", width: 8 },
 ];
+const FEET: PointKey[] = ["leftFoot", "rightFoot"];
 
 /**
  * A stylized, looping stick-figure animation standing in for real exercise
@@ -87,22 +95,47 @@ export function ExerciseAnimation({ pattern, size = 140, color = colors.primary 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [a, b]);
 
-  const strokeProps = { stroke: color, strokeWidth: 5, strokeLinecap: "round" as const };
+  const boneColor = { outfit: color, shorts: SHORTS, skin: SKIN };
 
   return (
     <View style={styles.container}>
       <Svg width={size} height={(size * VIEW_H) / VIEW_W} viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}>
-        {BONES.map(([from, to]) => (
-          <AnimatedLine
-            key={`${from}-${to}`}
-            x1={points[from].x}
-            y1={points[from].y}
-            x2={points[to].x}
-            y2={points[to].y}
-            {...strokeProps}
-          />
+        {/* Each bone's outline is drawn immediately before its own fill (not
+            all outlines first) so a later bone's outline cuts a visible
+            border into any earlier bone's fill where they cross - poses
+            viewed edge-on (a pushup's arms/torso, say) unavoidably overlap,
+            and without this they merge into a shapeless blob instead of
+            reading as separate limbs. */}
+        {BONES.map(({ from, to, color: tone, width }) => (
+          <React.Fragment key={`${from}-${to}`}>
+            <AnimatedLine
+              x1={points[from].x}
+              y1={points[from].y}
+              x2={points[to].x}
+              y2={points[to].y}
+              stroke={OUTLINE}
+              strokeWidth={width + 3}
+              strokeLinecap="round"
+            />
+            <AnimatedLine
+              x1={points[from].x}
+              y1={points[from].y}
+              x2={points[to].x}
+              y2={points[to].y}
+              stroke={boneColor[tone]}
+              strokeWidth={width}
+              strokeLinecap="round"
+            />
+          </React.Fragment>
         ))}
-        <AnimatedCircle cx={points.head.x} cy={points.head.y} r={LENGTHS.headRadius} fill={color} />
+        <AnimatedCircle cx={points.head.x} cy={points.head.y} r={LENGTHS.headRadius + 1.5} fill={OUTLINE} />
+        <AnimatedCircle cx={points.head.x} cy={points.head.y} r={LENGTHS.headRadius} fill={SKIN} />
+        {FEET.map((key) => (
+          <React.Fragment key={key}>
+            <AnimatedCircle cx={points[key].x} cy={points[key].y} r={6.5} fill={OUTLINE} />
+            <AnimatedCircle cx={points[key].x} cy={points[key].y} r={5} fill={colors.text} />
+          </React.Fragment>
+        ))}
       </Svg>
     </View>
   );
