@@ -175,8 +175,10 @@ export function ExerciseAnimation({ pattern, size = 140, color = colors.primary 
             fill="none"
             strokeLinecap="round"
           />
-          <Circle cx={r * 0.38} cy={-r * 0.05} r={r * 0.24} fill="white" />
-          <Circle cx={r * 0.44} cy={-r * 0.05} r={r * 0.13} fill={HAIR} />
+          <Circle cx={r * 0.16} cy={-r * 0.08} r={r * 0.15} fill="white" />
+          <Circle cx={r * 0.21} cy={-r * 0.08} r={r * 0.08} fill={HAIR} />
+          <Circle cx={r * 0.54} cy={-r * 0.08} r={r * 0.15} fill="white" />
+          <Circle cx={r * 0.59} cy={-r * 0.08} r={r * 0.08} fill={HAIR} />
           <Path
             d={`M ${r * 0.1},${r * 0.32} Q ${r * 0.38},${r * 0.56} ${r * 0.62},${r * 0.28}`}
             stroke={HAIR}
