@@ -4,7 +4,7 @@
 // only the wrapping <G>'s position/rotation animates per frame.
 import { LENGTHS } from "./pose";
 
-export type LimbName = "torso" | "upperArm" | "forearm" | "thigh" | "shin" | "neck";
+export type LimbName = "torso" | "upperArm" | "forearm" | "thigh" | "shin" | "neck" | "shorts";
 
 interface Point {
   x: number;
@@ -90,6 +90,11 @@ function bulge(base: number, peak: number, peakAt: number, tip: number) {
 // matches that same distance so this limb exactly fills it.
 const NECK_LENGTH = LENGTHS.headRadius * 1.4;
 
+// Shorts are a garment layered on top of a bare (skin-colored) thigh, not
+// the thigh's own color - short enough to expose the lower thigh, the
+// way an actual pair of shorts would.
+const SHORTS_LENGTH = LENGTHS.thigh * 0.55;
+
 const WIDTH_PROFILES: Record<LimbName, (t: number) => number> = {
   torso: bulge(6.5, 7, 0.3, 9),
   upperArm: bulge(5.2, 6.4, 0.4, 3.6),
@@ -97,6 +102,7 @@ const WIDTH_PROFILES: Record<LimbName, (t: number) => number> = {
   thigh: bulge(7, 8.5, 0.4, 5),
   shin: bulge(5.2, 6.2, 0.25, 2.8),
   neck: bulge(3.6, 3.8, 0.3, 4.2),
+  shorts: bulge(7.2, 8.5, 0.6, 9),
 };
 
 export const LIMB_PATHS: Record<LimbName, string> = {
@@ -106,6 +112,7 @@ export const LIMB_PATHS: Record<LimbName, string> = {
   thigh: limbPath(LENGTHS.thigh, WIDTH_PROFILES.thigh),
   shin: limbPath(LENGTHS.shin, WIDTH_PROFILES.shin),
   neck: limbPath(NECK_LENGTH, WIDTH_PROFILES.neck),
+  shorts: limbPath(SHORTS_LENGTH, WIDTH_PROFILES.shorts),
 };
 
 // A small hand silhouette (palm + three simplified fingers - a full five
@@ -162,3 +169,6 @@ export const SHOE_PATH = asymmetricPath(SHOE_LENGTH, shoeInstep, shoeSole, SHOE_
 // (same `shoeSole` profile and cap radius, just a shallower instep-side
 // edge) for a simple two-tone sneaker look.
 export const SOLE_PATH = asymmetricPath(SHOE_LENGTH, () => 0.4, shoeSole, SHOE_CAP_RADIUS);
+
+export const SHOE_COLOR = "#2D6FE0";
+export const SOLE_COLOR = "#173F8C";
