@@ -3,7 +3,7 @@ import { Animated, Easing, StyleSheet, View } from "react-native";
 import Svg, { Circle, Defs, G, LinearGradient, Path, Stop } from "react-native-svg";
 import { computeSkeleton, LENGTHS, type Skeleton } from "../animations/pose";
 import { PATTERNS, type AnimationPattern } from "../animations/patterns";
-import { LIMB_PATHS } from "../animations/limbShapes";
+import { HAND_PATH, LIMB_PATHS } from "../animations/limbShapes";
 import { colors } from "../theme";
 
 const AnimatedG = Animated.createAnimatedComponent(G);
@@ -49,7 +49,7 @@ const ANGLE_KEYS: AngleKey[] = [
 
 const SKIN = "#D9A066";
 const SHORTS = "#2A2E38";
-const HAIR = "#12141A";
+const HAIR = "#5C3A21";
 const OUTLINE = "#12141A";
 
 /**
@@ -142,10 +142,6 @@ export function ExerciseAnimation({ pattern, size = 140, color = colors.primary 
           <Path d={LIMB_PATHS.thigh} fill={SHORTS} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
           <Path d={LIMB_PATHS.thigh} fill="url(#shade)" />
         </AnimatedG>
-        <AnimatedCircle cx={points.leftKnee.x} cy={points.leftKnee.y} r={4.5} fill={SKIN} stroke={OUTLINE} strokeWidth={1.2} />
-        <AnimatedCircle cx={points.leftKnee.x} cy={points.leftKnee.y} r={4.5} fill="url(#shade)" />
-        <AnimatedCircle cx={points.rightKnee.x} cy={points.rightKnee.y} r={4.5} fill={SKIN} stroke={OUTLINE} strokeWidth={1.2} />
-        <AnimatedCircle cx={points.rightKnee.x} cy={points.rightKnee.y} r={4.5} fill="url(#shade)" />
         <AnimatedG x={points.leftKnee.x} y={points.leftKnee.y} rotation={angles.leftKneeAngle}>
           <Path d={LIMB_PATHS.shin} fill={SKIN} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
           <Path d={LIMB_PATHS.shin} fill="url(#shade)" />
@@ -157,15 +153,10 @@ export function ExerciseAnimation({ pattern, size = 140, color = colors.primary 
         <AnimatedCircle cx={points.leftFoot.x} cy={points.leftFoot.y} r={4.5} fill={colors.text} stroke={OUTLINE} strokeWidth={1.2} />
         <AnimatedCircle cx={points.rightFoot.x} cy={points.rightFoot.y} r={4.5} fill={colors.text} stroke={OUTLINE} strokeWidth={1.2} />
 
-        <AnimatedCircle cx={points.hip.x} cy={points.hip.y} r={6} fill={SHORTS} stroke={OUTLINE} strokeWidth={1.2} />
-        <AnimatedCircle cx={points.hip.x} cy={points.hip.y} r={6} fill="url(#shade)" />
         <AnimatedG x={points.hip.x} y={points.hip.y} rotation={angles.torsoAngle}>
           <Path d={LIMB_PATHS.torso} fill={color} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
           <Path d={LIMB_PATHS.torso} fill="url(#shade)" />
         </AnimatedG>
-        <AnimatedCircle cx={points.shoulder.x} cy={points.shoulder.y} r={7} fill={color} stroke={OUTLINE} strokeWidth={1.2} />
-        <AnimatedCircle cx={points.shoulder.x} cy={points.shoulder.y} r={7} fill="url(#shade)" />
-
         <AnimatedG x={points.shoulder.x} y={points.shoulder.y} rotation={angles.leftShoulderAngle}>
           <Path d={LIMB_PATHS.upperArm} fill={color} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
           <Path d={LIMB_PATHS.upperArm} fill="url(#shade)" />
@@ -174,10 +165,6 @@ export function ExerciseAnimation({ pattern, size = 140, color = colors.primary 
           <Path d={LIMB_PATHS.upperArm} fill={color} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
           <Path d={LIMB_PATHS.upperArm} fill="url(#shade)" />
         </AnimatedG>
-        <AnimatedCircle cx={points.leftElbow.x} cy={points.leftElbow.y} r={4} fill={SKIN} stroke={OUTLINE} strokeWidth={1.2} />
-        <AnimatedCircle cx={points.leftElbow.x} cy={points.leftElbow.y} r={4} fill="url(#shade)" />
-        <AnimatedCircle cx={points.rightElbow.x} cy={points.rightElbow.y} r={4} fill={SKIN} stroke={OUTLINE} strokeWidth={1.2} />
-        <AnimatedCircle cx={points.rightElbow.x} cy={points.rightElbow.y} r={4} fill="url(#shade)" />
         <AnimatedG x={points.leftElbow.x} y={points.leftElbow.y} rotation={angles.leftElbowAngle}>
           <Path d={LIMB_PATHS.forearm} fill={SKIN} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
           <Path d={LIMB_PATHS.forearm} fill="url(#shade)" />
@@ -186,8 +173,14 @@ export function ExerciseAnimation({ pattern, size = 140, color = colors.primary 
           <Path d={LIMB_PATHS.forearm} fill={SKIN} stroke={OUTLINE} strokeWidth={1.6} strokeLinejoin="round" />
           <Path d={LIMB_PATHS.forearm} fill="url(#shade)" />
         </AnimatedG>
-        <AnimatedCircle cx={points.leftHand.x} cy={points.leftHand.y} r={3.2} fill={SKIN} stroke={OUTLINE} strokeWidth={1} />
-        <AnimatedCircle cx={points.rightHand.x} cy={points.rightHand.y} r={3.2} fill={SKIN} stroke={OUTLINE} strokeWidth={1} />
+        <AnimatedG x={points.leftHand.x} y={points.leftHand.y} rotation={angles.leftElbowAngle}>
+          <Path d={HAND_PATH} fill={SKIN} stroke={OUTLINE} strokeWidth={1.3} strokeLinejoin="round" />
+          <Path d={HAND_PATH} fill="url(#shade)" />
+        </AnimatedG>
+        <AnimatedG x={points.rightHand.x} y={points.rightHand.y} rotation={angles.rightElbowAngle}>
+          <Path d={HAND_PATH} fill={SKIN} stroke={OUTLINE} strokeWidth={1.3} strokeLinejoin="round" />
+          <Path d={HAND_PATH} fill="url(#shade)" />
+        </AnimatedG>
 
         {/* Head + hair: an offset hair-colored circle drawn behind the
             skin circle leaves a natural crescent showing through on one
@@ -205,12 +198,12 @@ export function ExerciseAnimation({ pattern, size = 140, color = colors.primary 
             strokeLinecap="round"
           />
           <Circle cx={r * 0.16} cy={-r * 0.08} r={r * 0.15} fill="white" />
-          <Circle cx={r * 0.21} cy={-r * 0.08} r={r * 0.08} fill={HAIR} />
+          <Circle cx={r * 0.21} cy={-r * 0.08} r={r * 0.08} fill={OUTLINE} />
           <Circle cx={r * 0.54} cy={-r * 0.08} r={r * 0.15} fill="white" />
-          <Circle cx={r * 0.59} cy={-r * 0.08} r={r * 0.08} fill={HAIR} />
+          <Circle cx={r * 0.59} cy={-r * 0.08} r={r * 0.08} fill={OUTLINE} />
           <Path
             d={`M ${r * 0.1},${r * 0.32} Q ${r * 0.38},${r * 0.56} ${r * 0.62},${r * 0.28}`}
-            stroke={HAIR}
+            stroke={OUTLINE}
             strokeWidth={1.4}
             fill="none"
             strokeLinecap="round"
