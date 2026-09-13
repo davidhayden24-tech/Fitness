@@ -68,6 +68,18 @@ function limbPath(length: number, widthAt: (t: number) => number, samples = 9): 
   return asymmetricPath(length, widthAt, widthAt, widthAt(0), samples);
 }
 
+// A short "cap" overlay covering only the proximal `fraction` of a limb's
+// own length and width curve (rounded proximal joint, flat hem at the cut
+// point) - drawn on top of a limb whose base fill is bare skin, this is
+// what turns a bare thigh/upper-arm into one wearing shorts/a short
+// sleeve without needing a separate width profile: it reuses the parent
+// limb's exact taper up to the cut so the hem sits flush against it.
+function limbCapPath(totalLength: number, widthAt: (t: number) => number, fraction: number): string {
+  const cutLength = totalLength * fraction;
+  const scaledWidthAt = (t: number) => widthAt(t * fraction);
+  return asymmetricPath(cutLength, scaledWidthAt, scaledWidthAt, widthAt(0));
+}
+
 // Same idea as limbPath, but rounded at BOTH ends instead of just the
 // proximal joint. Only the torso needs this: its distal end (the
 // shoulders) isn't covered by a single child's own rounded cap the way
@@ -143,6 +155,13 @@ export const LIMB_PATHS: Record<LimbName, string> = {
   neck: limbPath(NECK_LENGTH, WIDTH_PROFILES.neck),
 };
 
+// Shorts: a cap over the top ~42% of the thigh, matching a reference
+// photo's hem line (roughly knee-to-hip-distance-wise between the waist
+// and the knee). The upper arm's own shirt sleeve needs no equivalent -
+// the reference's sleeve runs almost the full upper-arm segment, so that
+// limb is just colored as shirt fabric directly rather than layered.
+export const SHORTS_PATH = limbCapPath(LENGTHS.thigh, WIDTH_PROFILES.thigh, 0.42);
+
 // A small hand silhouette (palm + three simplified fingers - a full five
 // is too fussy to read at this size) instead of a plain dot, with the
 // same rounded-cap wrist so it blends into the forearm.
@@ -198,8 +217,8 @@ export const SHOE_PATH = asymmetricPath(SHOE_LENGTH, shoeInstep, shoeSole, SHOE_
 // edge) for a simple two-tone sneaker look.
 export const SOLE_PATH = asymmetricPath(SHOE_LENGTH, () => 0.4, shoeSole, SHOE_CAP_RADIUS);
 
-export const SHOE_COLOR = "#6C8CA6";
-export const SOLE_COLOR = "#4A6579";
+export const SHOE_COLOR = "#1356BB";
+export const SOLE_COLOR = "#EFF3F8";
 
 // A couple of short crossing lines suggesting shoelaces, in the same
 // local space as SHOE_PATH (heel at the origin, toe toward -Y).
