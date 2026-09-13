@@ -228,12 +228,23 @@ export function ExerciseAnimation({ pattern, size = 140, color = colors.primary 
           <Path d={LIMB_PATHS.neck} fill="url(#shade)" />
         </AnimatedG>
 
-        {/* Head + hair: a big offset hair-colored circle drawn behind the
-            skin circle, swept back over the top/side of the head - no
-            face, no visible ear (both fully hair-covered), matching a
-            flat side-on illustration rather than a cartoon character. */}
+        {/* Head + hair: a hand-shaped silhouette (not a plain offset
+            circle) with a swept fringe over the forehead, drawn behind
+            the skin circle - no face, no visible ear (both fully
+            hair-covered), matching a flat side-on illustration rather
+            than a cartoon character. */}
         <AnimatedG x={points.head.x} y={points.head.y} rotation={angles.torsoAngle}>
-          <Circle cx={-r * 0.22} cy={-r * 0.28} r={r * 1.32} fill={HAIR} />
+          <Path
+            d={`M ${r * -0.85},${r * -0.75}
+                Q ${r * -0.5},${r * -1.1} ${r * -0.1},${r * -1.05}
+                Q ${r * 0.35},${r * -1.0} ${r * 0.55},${r * -0.62}
+                Q ${r * 0.68},${r * -0.35} ${r * 0.6},${r * -0.12}
+                Q ${r * 0.5},${r * 0.05} ${r * 0.3},${r * 0.02}
+                Q ${r * -0.1},${r * 0.0} ${r * -0.3},${r * 0.3}
+                Q ${r * -0.5},${r * 0.55} ${r * -0.85},${r * 0.15}
+                Q ${r * -1.05},${r * -0.3} ${r * -0.85},${r * -0.75} Z`}
+            fill={HAIR}
+          />
           <Circle cx={0} cy={0} r={r} fill={SKIN} />
           <Circle cx={0} cy={0} r={r} fill="url(#shade)" />
         </AnimatedG>

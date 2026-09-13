@@ -175,12 +175,15 @@ export const SOLE_PATH = asymmetricPath(SHOE_LENGTH, () => 0.4, shoeSole, SHOE_C
 export const SHOE_COLOR = "#2D6FE0";
 export const SOLE_COLOR = "#173F8C";
 
-// A short darker band at the very top of the upper arm - a raglan-style
-// sleeve trim - drawn on top of the (bare skin) upper arm right at the
-// shoulder end, matching the reference's color-blocked sleeve cap rather
-// than a plain sleeveless tank.
-const SLEEVE_CAP_LENGTH = LENGTHS.upperArm * 0.3;
-export const SLEEVE_CAP_PATH = limbPath(SLEEVE_CAP_LENGTH, (t) => WIDTH_PROFILES.upperArm(t * 0.3));
+// A real short sleeve - covering a proper chunk of the upper arm in the
+// shirt color, not just a thin trim - drawn on top of the (bare skin)
+// upper arm at the shoulder end. SLEEVE_FRACTION is how much of the
+// upper arm's length it covers; sampling the upper arm's own width
+// profile over that same fraction keeps the sleeve's taper matching the
+// arm underneath instead of just being a uniform tube.
+const SLEEVE_FRACTION = 0.42;
+const SLEEVE_CAP_LENGTH = LENGTHS.upperArm * SLEEVE_FRACTION;
+export const SLEEVE_CAP_PATH = limbPath(SLEEVE_CAP_LENGTH, (t) => WIDTH_PROFILES.upperArm(t * SLEEVE_FRACTION) * 1.08);
 
 // A thin accent stripe down one side of the shorts. asymmetricPath always
 // straddles the local x=0 centerline (mirroring left/right around it), so
