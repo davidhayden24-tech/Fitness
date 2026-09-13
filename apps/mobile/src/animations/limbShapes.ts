@@ -4,7 +4,7 @@
 // only the wrapping <G>'s position/rotation animates per frame.
 import { LENGTHS } from "./pose";
 
-export type LimbName = "torso" | "upperArm" | "forearm" | "thigh" | "shin" | "neck" | "shorts";
+export type LimbName = "torso" | "upperArm" | "forearm" | "thigh" | "shin" | "neck";
 
 interface Point {
   x: number;
@@ -121,11 +121,6 @@ function bulge(base: number, peak: number, peakAt: number, tip: number) {
 // matches that same distance so this limb exactly fills it.
 const NECK_LENGTH = LENGTHS.headRadius * 1.4;
 
-// Shorts are a garment layered on top of a bare (skin-colored) thigh, not
-// the thigh's own color - short enough to expose the lower thigh, the
-// way an actual pair of shorts would.
-const SHORTS_LENGTH = LENGTHS.thigh * 0.55;
-
 const WIDTH_PROFILES: Record<LimbName, (t: number) => number> = {
   // Narrower at the waist (proximal, hip end), wider at the shoulders
   // (distal end) - an athletic V-taper. The rounded-both-ends torso path
@@ -137,7 +132,6 @@ const WIDTH_PROFILES: Record<LimbName, (t: number) => number> = {
   thigh: bulge(6.6, 8, 0.4, 4.6),
   shin: bulge(4.9, 5.8, 0.25, 2.5),
   neck: bulge(3.6, 3.8, 0.3, 4.2),
-  shorts: bulge(6.8, 8, 0.6, 8.6),
 };
 
 export const LIMB_PATHS: Record<LimbName, string> = {
@@ -147,7 +141,6 @@ export const LIMB_PATHS: Record<LimbName, string> = {
   thigh: limbPath(LENGTHS.thigh, WIDTH_PROFILES.thigh),
   shin: limbPath(LENGTHS.shin, WIDTH_PROFILES.shin),
   neck: limbPath(NECK_LENGTH, WIDTH_PROFILES.neck),
-  shorts: limbPath(SHORTS_LENGTH, WIDTH_PROFILES.shorts),
 };
 
 // A small hand silhouette (palm + three simplified fingers - a full five
@@ -205,18 +198,8 @@ export const SHOE_PATH = asymmetricPath(SHOE_LENGTH, shoeInstep, shoeSole, SHOE_
 // edge) for a simple two-tone sneaker look.
 export const SOLE_PATH = asymmetricPath(SHOE_LENGTH, () => 0.4, shoeSole, SHOE_CAP_RADIUS);
 
-export const SHOE_COLOR = "#1C1C1E";
-export const SOLE_COLOR = "#E8622C";
-
-// A real short sleeve - covering a proper chunk of the upper arm in the
-// shirt color, not just a thin trim - drawn on top of the (bare skin)
-// upper arm at the shoulder end. SLEEVE_FRACTION is how much of the
-// upper arm's length it covers; sampling the upper arm's own width
-// profile over that same fraction keeps the sleeve's taper matching the
-// arm underneath instead of just being a uniform tube.
-const SLEEVE_FRACTION = 0.42;
-const SLEEVE_CAP_LENGTH = LENGTHS.upperArm * SLEEVE_FRACTION;
-export const SLEEVE_CAP_PATH = limbPath(SLEEVE_CAP_LENGTH, (t) => WIDTH_PROFILES.upperArm(t * SLEEVE_FRACTION) * 1.08);
+export const SHOE_COLOR = "#6C8CA6";
+export const SOLE_COLOR = "#4A6579";
 
 // A couple of short crossing lines suggesting shoelaces, in the same
 // local space as SHOE_PATH (heel at the origin, toe toward -Y).

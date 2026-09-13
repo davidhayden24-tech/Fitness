@@ -3,16 +3,7 @@ import { Animated, Easing, StyleSheet, View } from "react-native";
 import Svg, { Circle, Defs, G, LinearGradient, Path, Stop } from "react-native-svg";
 import { computeSkeleton, LENGTHS, type Skeleton } from "../animations/pose";
 import { EXERCISE_ANIMATIONS, type ExerciseAnimationId } from "../animations/exerciseAnimations";
-import {
-  HAND_PATH,
-  LIMB_PATHS,
-  SHOE_COLOR,
-  SHOE_LACE_PATH,
-  SHOE_PATH,
-  SLEEVE_CAP_PATH,
-  SOLE_COLOR,
-  SOLE_PATH,
-} from "../animations/limbShapes";
+import { HAND_PATH, LIMB_PATHS, SHOE_COLOR, SHOE_LACE_PATH, SHOE_PATH, SOLE_COLOR, SOLE_PATH } from "../animations/limbShapes";
 
 const AnimatedG = Animated.createAnimatedComponent(G);
 
@@ -55,14 +46,15 @@ const ANGLE_KEYS: AngleKey[] = [
 ];
 
 const SKIN = "#D9A066";
-const SHORTS = "#2A2E38";
-const HAIR = "#5B3A22";
-const PIPING = "#F5F6F8";
+const HAIR = "#12141A";
 const LACE = "#0E1420";
-// The default shirt color - independent of the app's own brand color
+// The default outfit color - independent of the app's own brand color
 // (colors.primary), since this character's outfit is its own design
-// choice, not a UI accent.
-const DEFAULT_SHIRT = "#E8622C";
+// choice, not a UI accent. A single monochrome long-sleeve top + long
+// pants (not a two-tone shirt/shorts combo), so the torso, upper arm,
+// forearm, thigh and shin all share this one fill - only hands, neck
+// and head stay bare skin.
+const DEFAULT_OUTFIT = "#132339";
 
 /**
  * A stylized, looping "illustrated athlete" animation standing in for real
@@ -84,15 +76,13 @@ const DEFAULT_SHIRT = "#E8622C";
  * frame with no per-frame path recomputation.
  *
  * No outlines and no face, matching a reference illustration: adjacent
- * same-colored limbs (e.g. upper arm, forearm and hand, all bare skin)
- * rely on their own rounded-cap overlap to read as one continuous shape,
- * since there's no stroke line to separate them. A subtle directional
- * gradient (id="shade") is layered on top of every limb, plus a raglan
- * sleeve trim, a shorts stripe and shoe laces, for a bit more of the
- * dimensional, athletic-outfit look that reference has over a completely
- * flat fill.
+ * same-colored limbs (e.g. torso, upper arm and forearm, all outfit-
+ * colored under a long-sleeve top) rely on their own rounded-cap overlap
+ * to read as one continuous shape, since there's no stroke line to
+ * separate them. A subtle directional gradient (id="shade") is layered
+ * on top of every limb for a bit of volume over a completely flat fill.
  */
-export function ExerciseAnimation({ pattern, size = 140, color = DEFAULT_SHIRT }: Props) {
+export function ExerciseAnimation({ pattern, size = 140, color = DEFAULT_OUTFIT }: Props) {
   const progress = useRef(new Animated.Value(0)).current;
 
   const keyframes = useMemo(() => EXERCISE_ANIMATIONS[pattern], [pattern]);
@@ -149,25 +139,22 @@ export function ExerciseAnimation({ pattern, size = 140, color = DEFAULT_SHIRT }
         </Defs>
 
         {/* Legs behind the torso/arms, so the hip and shoulder joints
-            layer naturally on top of them. Thighs are bare skin with a
-            short shorts overlay layered on top, rather than the shorts
-            covering the whole thigh, so the lower thigh shows through. */}
+            layer naturally on top of them. Long pants: thigh and shin
+            share the outfit color, not bare skin. */}
         <AnimatedG x={points.hip.x} y={points.hip.y} rotation={angles.leftHipAngle}>
-          <Path d={LIMB_PATHS.thigh} fill={SKIN} />
+          <Path d={LIMB_PATHS.thigh} fill={color} />
           <Path d={LIMB_PATHS.thigh} fill="url(#shade)" />
-          <Path d={LIMB_PATHS.shorts} fill={SHORTS} />
         </AnimatedG>
         <AnimatedG x={points.hip.x} y={points.hip.y} rotation={angles.rightHipAngle}>
-          <Path d={LIMB_PATHS.thigh} fill={SKIN} />
+          <Path d={LIMB_PATHS.thigh} fill={color} />
           <Path d={LIMB_PATHS.thigh} fill="url(#shade)" />
-          <Path d={LIMB_PATHS.shorts} fill={SHORTS} />
         </AnimatedG>
         <AnimatedG x={points.leftKnee.x} y={points.leftKnee.y} rotation={angles.leftKneeAngle}>
-          <Path d={LIMB_PATHS.shin} fill={SKIN} />
+          <Path d={LIMB_PATHS.shin} fill={color} />
           <Path d={LIMB_PATHS.shin} fill="url(#shade)" />
         </AnimatedG>
         <AnimatedG x={points.rightKnee.x} y={points.rightKnee.y} rotation={angles.rightKneeAngle}>
-          <Path d={LIMB_PATHS.shin} fill={SKIN} />
+          <Path d={LIMB_PATHS.shin} fill={color} />
           <Path d={LIMB_PATHS.shin} fill="url(#shade)" />
         </AnimatedG>
         <AnimatedG x={points.leftFoot.x} y={points.leftFoot.y} rotation={angles.leftKneeAngle}>
@@ -183,31 +170,28 @@ export function ExerciseAnimation({ pattern, size = 140, color = DEFAULT_SHIRT }
           <Path d={SHOE_PATH} fill="url(#shade)" />
         </AnimatedG>
 
-        {/* Torso keeps the outfit color; arms are bare skin (a sleeveless
-            tank), so upper arm, forearm and hand all share one fill and
-            read as a single continuous arm. A thin white piping outline
-            traces where the tank top's armhole seam would be, instead of
-            a solid contrast sleeve block. */}
+        {/* Torso, upper arm and forearm all share the outfit color - a
+            fitted long-sleeve top, not a short-sleeve/sleeveless one -
+            so the whole arm reads as one continuous outfit-colored
+            shape, with only the hand left bare skin. */}
         <AnimatedG x={points.hip.x} y={points.hip.y} rotation={angles.torsoAngle}>
           <Path d={LIMB_PATHS.torso} fill={color} />
           <Path d={LIMB_PATHS.torso} fill="url(#shade)" />
         </AnimatedG>
         <AnimatedG x={points.shoulder.x} y={points.shoulder.y} rotation={angles.leftShoulderAngle}>
-          <Path d={LIMB_PATHS.upperArm} fill={SKIN} />
+          <Path d={LIMB_PATHS.upperArm} fill={color} />
           <Path d={LIMB_PATHS.upperArm} fill="url(#shade)" />
-          <Path d={SLEEVE_CAP_PATH} fill="none" stroke={PIPING} strokeWidth={0.8} strokeLinejoin="round" />
         </AnimatedG>
         <AnimatedG x={points.shoulder.x} y={points.shoulder.y} rotation={angles.rightShoulderAngle}>
-          <Path d={LIMB_PATHS.upperArm} fill={SKIN} />
+          <Path d={LIMB_PATHS.upperArm} fill={color} />
           <Path d={LIMB_PATHS.upperArm} fill="url(#shade)" />
-          <Path d={SLEEVE_CAP_PATH} fill="none" stroke={PIPING} strokeWidth={0.8} strokeLinejoin="round" />
         </AnimatedG>
         <AnimatedG x={points.leftElbow.x} y={points.leftElbow.y} rotation={angles.leftElbowAngle}>
-          <Path d={LIMB_PATHS.forearm} fill={SKIN} />
+          <Path d={LIMB_PATHS.forearm} fill={color} />
           <Path d={LIMB_PATHS.forearm} fill="url(#shade)" />
         </AnimatedG>
         <AnimatedG x={points.rightElbow.x} y={points.rightElbow.y} rotation={angles.rightElbowAngle}>
-          <Path d={LIMB_PATHS.forearm} fill={SKIN} />
+          <Path d={LIMB_PATHS.forearm} fill={color} />
           <Path d={LIMB_PATHS.forearm} fill="url(#shade)" />
         </AnimatedG>
         <AnimatedG x={points.leftHand.x} y={points.leftHand.y} rotation={angles.leftElbowAngle}>
