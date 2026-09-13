@@ -106,16 +106,24 @@ function jitter(kf: Keyframes, id: string, amount = 2.5): Keyframes {
 }
 
 // Reusable starting poses for movements the 20 base patterns don't cover.
+//
+// PRONE and SUPINE's legs extend AWAY from the torso (hip angle =
+// torsoAngle +/- 180), not at the same angle as the torso itself - the
+// latter makes the thigh collinear with (and hidden behind) the torso,
+// leaving only the shin visible and bent-looking, so the whole pose
+// reads as a folded crouch instead of a straight body line. QUADRUPED is
+// a genuinely different case (kneeling, not a straight line): the thighs
+// hang down to knees on the ground, the shins fold back from there.
 const STAND: Pose = { hipX: 60, hipY: 85, torsoAngle: 0, leftShoulderAngle: 170, leftElbowAngle: 175, rightShoulderAngle: -170, rightElbowAngle: -175, leftHipAngle: 170, leftKneeAngle: 178, rightHipAngle: -170, rightKneeAngle: -178 };
-const PRONE: Pose = { hipX: 55, hipY: 95, torsoAngle: 92, leftShoulderAngle: 25, leftElbowAngle: 178, rightShoulderAngle: -25, rightElbowAngle: -178, leftHipAngle: 92, leftKneeAngle: 175, rightHipAngle: 92, rightKneeAngle: -175 };
-const SUPINE: Pose = { hipX: 60, hipY: 100, torsoAngle: 90, leftShoulderAngle: 90, leftElbowAngle: 95, rightShoulderAngle: 90, rightElbowAngle: -95, leftHipAngle: 170, leftKneeAngle: 178, rightHipAngle: 170, rightKneeAngle: -178 };
-const QUADRUPED: Pose = { hipX: 55, hipY: 100, torsoAngle: 100, leftShoulderAngle: 20, leftElbowAngle: 178, rightShoulderAngle: -20, rightElbowAngle: -178, leftHipAngle: 100, leftKneeAngle: 60, rightHipAngle: 100, rightKneeAngle: 60 };
+const PRONE: Pose = { hipX: 55, hipY: 95, torsoAngle: 92, leftShoulderAngle: 25, leftElbowAngle: 178, rightShoulderAngle: -25, rightElbowAngle: -178, leftHipAngle: -88, leftKneeAngle: -88, rightHipAngle: -88, rightKneeAngle: -88 };
+const SUPINE: Pose = { hipX: 60, hipY: 100, torsoAngle: 90, leftShoulderAngle: 90, leftElbowAngle: 95, rightShoulderAngle: 90, rightElbowAngle: -95, leftHipAngle: -90, leftKneeAngle: -90, rightHipAngle: -90, rightKneeAngle: -90 };
+const QUADRUPED: Pose = { hipX: 55, hipY: 100, torsoAngle: 100, leftShoulderAngle: 20, leftElbowAngle: 178, rightShoulderAngle: -20, rightElbowAngle: -178, leftHipAngle: 170, leftKneeAngle: 100, rightHipAngle: 170, rightKneeAngle: 100 };
 const SEATED: Pose = { hipX: 60, hipY: 100, torsoAngle: 8, leftShoulderAngle: 60, leftElbowAngle: 90, rightShoulderAngle: -60, rightElbowAngle: -90, leftHipAngle: 92, leftKneeAngle: 178, rightHipAngle: 92, rightKneeAngle: -178 };
 
 // Shared custom poses referenced by more than one exercise below.
 const pikeTop = p(PRONE, { torsoAngle: 108, leftShoulderAngle: 35, leftElbowAngle: 170, rightShoulderAngle: -35, rightElbowAngle: -170, leftHipAngle: 60, rightHipAngle: 60 });
 const pikeBottom = p(pikeTop, { leftShoulderAngle: 48, leftElbowAngle: 120, rightShoulderAngle: -48, rightElbowAngle: -120 });
-const reversePlankPose: Pose = { hipX: 55, hipY: 96, torsoAngle: 88, leftShoulderAngle: 130, leftElbowAngle: 172, rightShoulderAngle: 130, rightElbowAngle: 172, leftHipAngle: 92, leftKneeAngle: 175, rightHipAngle: 92, rightKneeAngle: 175 };
+const reversePlankPose: Pose = { hipX: 55, hipY: 96, torsoAngle: 88, leftShoulderAngle: 130, leftElbowAngle: 172, rightShoulderAngle: 130, rightElbowAngle: 172, leftHipAngle: -92, leftKneeAngle: -92, rightHipAngle: -92, rightKneeAngle: -92 };
 const quadrupedNeutral = p(QUADRUPED, {});
 const burpeeSquatDown = p(STAND, { hipY: 100, torsoAngle: 20, leftHipAngle: 150, rightHipAngle: -150, leftKneeAngle: 205, rightKneeAngle: -205, leftShoulderAngle: 120, rightShoulderAngle: -120 });
 const foldPose = p(STAND, { torsoAngle: 70, leftShoulderAngle: 90, leftElbowAngle: 88, rightShoulderAngle: -90, rightElbowAngle: -88, leftKneeAngle: 172, rightKneeAngle: -172 });
@@ -123,7 +131,7 @@ const foldPose = p(STAND, { torsoAngle: 70, leftShoulderAngle: 90, leftElbowAngl
 export const EXERCISE_ANIMATIONS: Record<string, Keyframes> = {
   // --- Push -----------------------------------------------------------
   standard_pushup: jitter(base("pushup"), "standard_pushup"),
-  knee_pushup: jitter(setField(setField(shift(base("pushup"), "hipY", -4), "leftKneeAngle", 70), "rightKneeAngle", -70), "knee_pushup"),
+  knee_pushup: jitter(setField(setField(shift(base("pushup"), "hipY", -4), "leftKneeAngle", -20), "rightKneeAngle", 20), "knee_pushup"),
   incline_pushup: jitter(shift(base("pushup"), "torsoAngle", -24), "incline_pushup"),
   decline_pushup: jitter(shift(base("pushup"), "torsoAngle", 10), "decline_pushup"),
   wide_pushup: jitter(shift(shift(base("pushup"), "leftShoulderAngle", 15), "rightShoulderAngle", -15), "wide_pushup"),
@@ -156,7 +164,7 @@ export const EXERCISE_ANIMATIONS: Record<string, Keyframes> = {
   superman: jitter(base("back_extension"), "superman"),
   reverse_snow_angel: jitter(scaleFrom(scaleFrom(base("back_extension"), "leftShoulderAngle", 1.8), "rightShoulderAngle", 1.8), "reverse_snow_angel"),
   bird_dog: jitter(
-    threePhase(quadrupedNeutral, p(QUADRUPED, { leftShoulderAngle: -60, leftElbowAngle: -178, rightHipAngle: 175, rightKneeAngle: 178 })),
+    threePhase(quadrupedNeutral, p(QUADRUPED, { leftShoulderAngle: -60, leftElbowAngle: -178, rightHipAngle: -80, rightKneeAngle: -80 })),
     "bird_dog"
   ),
   prone_y_raise: jitter(scaleFrom(scaleFrom(base("back_extension"), "leftShoulderAngle", 1.3), "rightShoulderAngle", 1.3), "prone_y_raise"),
@@ -182,29 +190,29 @@ export const EXERCISE_ANIMATIONS: Record<string, Keyframes> = {
   crunch: jitter(scaleFrom(scaleFrom(scaleFrom(base("situp"), "torsoAngle", 0.35), "leftShoulderAngle", 0.35), "rightShoulderAngle", 0.35), "crunch"),
   bicycle_crunch: jitter(
     (() => {
-      const a = p(SUPINE, { torsoAngle: 70, leftShoulderAngle: 60, leftElbowAngle: 40, rightShoulderAngle: 100, rightElbowAngle: -140, leftHipAngle: 130, leftKneeAngle: 90, rightHipAngle: 170, rightKneeAngle: 178 });
+      const a = p(SUPINE, { torsoAngle: 70, leftShoulderAngle: 60, leftElbowAngle: 40, rightShoulderAngle: 100, rightElbowAngle: -140, leftHipAngle: 30, leftKneeAngle: 110, rightHipAngle: -90, rightKneeAngle: -90 });
       return threePhase(a, mirrorPose(a));
     })(),
     "bicycle_crunch"
   ),
   reverse_crunch: jitter(
     threePhase(
-      p(SUPINE, { leftHipAngle: 165, rightHipAngle: 165, leftKneeAngle: 178, rightKneeAngle: 178 }),
-      p(SUPINE, { hipY: 96, leftHipAngle: 70, rightHipAngle: 70, leftKneeAngle: 60, rightKneeAngle: 60 })
+      p(SUPINE, {}),
+      p(SUPINE, { hipY: 96, leftHipAngle: -20, rightHipAngle: -20, leftKneeAngle: 30, rightKneeAngle: 30 })
     ),
     "reverse_crunch"
   ),
   leg_raise: jitter(
     threePhase(
-      p(SUPINE, { leftHipAngle: 172, rightHipAngle: 172, leftKneeAngle: 178, rightKneeAngle: 178 }),
-      p(SUPINE, { leftHipAngle: 92, rightHipAngle: 92, leftKneeAngle: 178, rightKneeAngle: 178 })
+      p(SUPINE, {}),
+      p(SUPINE, { leftHipAngle: 0, rightHipAngle: 0, leftKneeAngle: 0, rightKneeAngle: 0 })
     ),
     "leg_raise"
   ),
   flutter_kicks: jitter(
     threePhase(
-      p(SUPINE, { leftHipAngle: 150, rightHipAngle: 175, leftKneeAngle: 178, rightKneeAngle: 178 }),
-      p(SUPINE, { leftHipAngle: 175, rightHipAngle: 150, leftKneeAngle: 178, rightKneeAngle: 178 })
+      p(SUPINE, { leftHipAngle: -110, rightHipAngle: -85, leftKneeAngle: -110, rightKneeAngle: -85 }),
+      p(SUPINE, { leftHipAngle: -85, rightHipAngle: -110, leftKneeAngle: -85, rightKneeAngle: -110 })
     ),
     "flutter_kicks"
   ),
@@ -216,22 +224,22 @@ export const EXERCISE_ANIMATIONS: Record<string, Keyframes> = {
   mountain_climbers: jitter(base("mountain_climber"), "mountain_climbers"),
   dead_bug: jitter(
     (() => {
-      const a = p(SUPINE, { leftShoulderAngle: 90, leftElbowAngle: 95, rightShoulderAngle: 20, rightElbowAngle: 15, leftHipAngle: 170, leftKneeAngle: 178, rightHipAngle: 92, rightKneeAngle: 175 });
+      const a = p(SUPINE, { leftShoulderAngle: 90, leftElbowAngle: 95, rightShoulderAngle: 20, rightElbowAngle: 15, leftHipAngle: -70, leftKneeAngle: -70, rightHipAngle: 10, rightKneeAngle: 100 });
       return threePhase(a, mirrorPose(a));
     })(),
     "dead_bug"
   ),
   hollow_body_hold: jitter(
     threePhase(
-      p(SUPINE, { torsoAngle: 82, leftShoulderAngle: 15, leftElbowAngle: 10, rightShoulderAngle: 15, rightElbowAngle: -10, leftHipAngle: 155, rightHipAngle: 155 }),
-      p(SUPINE, { torsoAngle: 86, leftShoulderAngle: 15, leftElbowAngle: 10, rightShoulderAngle: 15, rightElbowAngle: -10, leftHipAngle: 155, rightHipAngle: 155 })
+      p(SUPINE, { torsoAngle: 82, leftShoulderAngle: 15, leftElbowAngle: 10, rightShoulderAngle: 15, rightElbowAngle: -10, leftHipAngle: -75, leftKneeAngle: -75, rightHipAngle: -75, rightKneeAngle: -75 }),
+      p(SUPINE, { torsoAngle: 86, leftShoulderAngle: 15, leftElbowAngle: 10, rightShoulderAngle: 15, rightElbowAngle: -10, leftHipAngle: -75, leftKneeAngle: -75, rightHipAngle: -75, rightKneeAngle: -75 })
     ),
     "hollow_body_hold"
   ),
   v_up: jitter(
     threePhase(
-      p(SUPINE, { leftHipAngle: 172, rightHipAngle: 172, leftKneeAngle: 178, rightKneeAngle: 178 }),
-      p(SUPINE, { torsoAngle: 50, leftShoulderAngle: 40, leftElbowAngle: 35, rightShoulderAngle: 40, rightElbowAngle: -35, leftHipAngle: 100, rightHipAngle: 100, leftKneeAngle: 178, rightKneeAngle: 178 })
+      p(SUPINE, {}),
+      p(SUPINE, { torsoAngle: 50, leftShoulderAngle: 40, leftElbowAngle: 35, rightShoulderAngle: 40, rightElbowAngle: -35, leftHipAngle: 40, rightHipAngle: 40, leftKneeAngle: 40, rightKneeAngle: 40 })
     ),
     "v_up"
   ),
@@ -244,8 +252,8 @@ export const EXERCISE_ANIMATIONS: Record<string, Keyframes> = {
   ),
   plank_jacks: jitter(
     threePhase(
-      p(PRONE, { leftHipAngle: 92, rightHipAngle: 92, leftKneeAngle: 175, rightKneeAngle: -175 }),
-      p(PRONE, { leftHipAngle: 70, rightHipAngle: 110, leftKneeAngle: 165, rightKneeAngle: -165 })
+      p(PRONE, {}),
+      p(PRONE, { leftHipAngle: -110, rightHipAngle: -66, leftKneeAngle: -110, rightKneeAngle: -66 })
     ),
     "plank_jacks"
   ),
@@ -271,8 +279,8 @@ export const EXERCISE_ANIMATIONS: Record<string, Keyframes> = {
   glute_bridge: jitter(base("hip_bridge"), "glute_bridge"),
   single_leg_glute_bridge: jitter(setField(setField(base("hip_bridge"), "rightHipAngle", -170), "rightKneeAngle", -178), "single_leg_glute_bridge"),
   hip_thrust_floor: jitter(scaleFrom(base("hip_bridge"), "hipY", 1.15), "hip_thrust_floor"),
-  donkey_kick: jitter(threePhase(quadrupedNeutral, p(QUADRUPED, { rightHipAngle: 175, rightKneeAngle: 90 })), "donkey_kick"),
-  fire_hydrant: jitter(threePhase(quadrupedNeutral, p(QUADRUPED, { rightHipAngle: 140, rightKneeAngle: 80 })), "fire_hydrant"),
+  donkey_kick: jitter(threePhase(quadrupedNeutral, p(QUADRUPED, { rightHipAngle: 120, rightKneeAngle: 160 })), "donkey_kick"),
+  fire_hydrant: jitter(threePhase(quadrupedNeutral, p(QUADRUPED, { rightHipAngle: 110, rightKneeAngle: 140 })), "fire_hydrant"),
   calf_raise: jitter(base("calf_raise"), "calf_raise"),
   single_leg_calf_raise: jitter(setField(setField(base("calf_raise"), "rightHipAngle", -150), "rightKneeAngle", -220), "single_leg_calf_raise"),
   squat_pulse: jitter(threePhase(base("squat")[2], p(base("squat")[2], { hipY: base("squat")[2].hipY - 3 })), "squat_pulse"),
@@ -304,7 +312,7 @@ export const EXERCISE_ANIMATIONS: Record<string, Keyframes> = {
   ),
   star_jump: jitter(scaleFrom(scaleFrom(base("jumping_jack"), "leftShoulderAngle", 1.2), "hipY", 1.2), "star_jump"),
   tuck_jump: jitter(threePhase(STAND, p(STAND, { hipY: 70, leftHipAngle: 100, rightHipAngle: -100, leftKneeAngle: 40, rightKneeAngle: -40 })), "tuck_jump"),
-  crab_walk: jitter(threePhase(reversePlankPose, p(reversePlankPose, { leftHipAngle: 120, leftKneeAngle: 100, rightShoulderAngle: 150 })), "crab_walk"),
+  crab_walk: jitter(threePhase(reversePlankPose, p(reversePlankPose, { leftHipAngle: -60, leftKneeAngle: -80, rightShoulderAngle: 150 })), "crab_walk"),
   bear_crawl_forward: jitter(base("bear_crawl"), "bear_crawl_forward"),
   plank_to_downward_dog: jitter(threePhase(p(PRONE, {}), pikeTop), "plank_to_downward_dog"),
 
@@ -319,8 +327,8 @@ export const EXERCISE_ANIMATIONS: Record<string, Keyframes> = {
   ),
   pelvic_tilt: jitter(
     threePhase(
-      p(SUPINE, { torsoAngle: 88, leftHipAngle: 130, leftKneeAngle: 60, rightHipAngle: 130, rightKneeAngle: 60 }),
-      p(SUPINE, { torsoAngle: 94, leftHipAngle: 130, leftKneeAngle: 60, rightHipAngle: 130, rightKneeAngle: 60 })
+      p(SUPINE, { torsoAngle: 88, leftHipAngle: -40, leftKneeAngle: 70, rightHipAngle: -40, rightKneeAngle: 70 }),
+      p(SUPINE, { torsoAngle: 94, leftHipAngle: -40, leftKneeAngle: 70, rightHipAngle: -40, rightKneeAngle: 70 })
     ),
     "pelvic_tilt"
   ),
@@ -347,8 +355,8 @@ export const EXERCISE_ANIMATIONS: Record<string, Keyframes> = {
   ),
   figure_four_stretch: jitter(
     threePhase(
-      p(SUPINE, { leftHipAngle: 130, leftKneeAngle: 60, rightHipAngle: 100, rightKneeAngle: 40 }),
-      p(SUPINE, { hipY: 98, leftHipAngle: 130, leftKneeAngle: 60, rightHipAngle: 100, rightKneeAngle: 40 })
+      p(SUPINE, { leftHipAngle: -40, leftKneeAngle: 10, rightHipAngle: -60, rightKneeAngle: -20 }),
+      p(SUPINE, { hipY: 98, leftHipAngle: -40, leftKneeAngle: 10, rightHipAngle: -60, rightKneeAngle: -20 })
     ),
     "figure_four_stretch"
   ),

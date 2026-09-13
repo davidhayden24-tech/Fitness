@@ -33,8 +33,13 @@ const squatBottom: Pose = { hipX: 60, hipY: 118, torsoAngle: 15, leftShoulderAng
 const lungeTop: Pose = { hipX: 60, hipY: 85, torsoAngle: 5, leftShoulderAngle: 165, leftElbowAngle: 160, rightShoulderAngle: -160, rightElbowAngle: -150, leftHipAngle: 165, leftKneeAngle: 178, rightHipAngle: -165, rightKneeAngle: -178 };
 const lungeBottom: Pose = { hipX: 60, hipY: 108, torsoAngle: 8, leftShoulderAngle: 165, leftElbowAngle: 160, rightShoulderAngle: -160, rightElbowAngle: -150, leftHipAngle: 145, leftKneeAngle: 220, rightHipAngle: -195, rightKneeAngle: -165 };
 
-const pushupTop: Pose = { hipX: 55, hipY: 95, torsoAngle: 92, leftShoulderAngle: 30, leftElbowAngle: 170, rightShoulderAngle: -30, rightElbowAngle: -170, leftHipAngle: 92, leftKneeAngle: 175, rightHipAngle: 92, rightKneeAngle: -175 };
-const pushupBottom: Pose = { hipX: 55, hipY: 100, torsoAngle: 92, leftShoulderAngle: 40, leftElbowAngle: 120, rightShoulderAngle: -40, rightElbowAngle: -120, leftHipAngle: 92, leftKneeAngle: 175, rightHipAngle: 92, rightKneeAngle: -175 };
+// The leg must extend AWAY from the torso (hip angle = torsoAngle - 180,
+// not torsoAngle itself) for a straight plank line - setting it equal to
+// torsoAngle instead makes the thigh collinear with (and hidden behind)
+// the torso, leaving only the bent-looking shin visible and making the
+// whole pose read as a folded crouch instead of a straight-body pushup.
+const pushupTop: Pose = { hipX: 55, hipY: 95, torsoAngle: 92, leftShoulderAngle: 30, leftElbowAngle: 170, rightShoulderAngle: -30, rightElbowAngle: -170, leftHipAngle: -88, leftKneeAngle: -88, rightHipAngle: -88, rightKneeAngle: -88 };
+const pushupBottom: Pose = { hipX: 55, hipY: 100, torsoAngle: 92, leftShoulderAngle: 40, leftElbowAngle: 120, rightShoulderAngle: -40, rightElbowAngle: -120, leftHipAngle: -88, leftKneeAngle: -88, rightHipAngle: -88, rightKneeAngle: -88 };
 
 const overheadTop: Pose = { hipX: 60, hipY: 85, torsoAngle: 0, leftShoulderAngle: 30, leftElbowAngle: 20, rightShoulderAngle: -30, rightElbowAngle: -20, leftHipAngle: 170, leftKneeAngle: 178, rightHipAngle: -170, rightKneeAngle: -178 };
 const overheadBottom: Pose = { hipX: 60, hipY: 85, torsoAngle: 0, leftShoulderAngle: 15, leftElbowAngle: 5, rightShoulderAngle: -15, rightElbowAngle: -5, leftHipAngle: 170, leftKneeAngle: 178, rightHipAngle: -170, rightKneeAngle: -178 };
@@ -42,11 +47,14 @@ const overheadBottom: Pose = { hipX: 60, hipY: 85, torsoAngle: 0, leftShoulderAn
 const dipTop: Pose = { hipX: 60, hipY: 90, torsoAngle: 5, leftShoulderAngle: 160, leftElbowAngle: 178, rightShoulderAngle: -160, rightElbowAngle: -178, leftHipAngle: 150, leftKneeAngle: 95, rightHipAngle: -150, rightKneeAngle: -95 };
 const dipBottom: Pose = { hipX: 60, hipY: 105, torsoAngle: 5, leftShoulderAngle: 155, leftElbowAngle: 130, rightShoulderAngle: -155, rightElbowAngle: -130, leftHipAngle: 150, leftKneeAngle: 95, rightHipAngle: -150, rightKneeAngle: -95 };
 
-const backExtTop: Pose = { hipX: 55, hipY: 100, torsoAngle: 88, leftShoulderAngle: 60, leftElbowAngle: 60, rightShoulderAngle: 60, rightElbowAngle: 60, leftHipAngle: 88, leftKneeAngle: 178, rightHipAngle: 88, rightKneeAngle: -178 };
-const backExtBottom: Pose = { hipX: 55, hipY: 100, torsoAngle: 70, leftShoulderAngle: 30, leftElbowAngle: 30, rightShoulderAngle: 30, rightElbowAngle: 30, leftHipAngle: 88, leftKneeAngle: 178, rightHipAngle: 88, rightKneeAngle: -178 };
+// Legs stay planted on the ground throughout - only the chest/torso
+// lifts - so they use a fixed angle (opposite the resting torsoAngle, not
+// whatever the torso rotates to mid-lift).
+const backExtTop: Pose = { hipX: 55, hipY: 100, torsoAngle: 88, leftShoulderAngle: 60, leftElbowAngle: 60, rightShoulderAngle: 60, rightElbowAngle: 60, leftHipAngle: -92, leftKneeAngle: -92, rightHipAngle: -92, rightKneeAngle: -92 };
+const backExtBottom: Pose = { hipX: 55, hipY: 100, torsoAngle: 70, leftShoulderAngle: 30, leftElbowAngle: 30, rightShoulderAngle: 30, rightElbowAngle: 30, leftHipAngle: -92, leftKneeAngle: -92, rightHipAngle: -92, rightKneeAngle: -92 };
 
-const plankTop: Pose = { hipX: 55, hipY: 95, torsoAngle: 92, leftShoulderAngle: 25, leftElbowAngle: 178, rightShoulderAngle: -25, rightElbowAngle: -178, leftHipAngle: 92, leftKneeAngle: 175, rightHipAngle: 92, rightKneeAngle: -175 };
-const plankBottom: Pose = { hipX: 55, hipY: 97, torsoAngle: 90, leftShoulderAngle: 25, leftElbowAngle: 178, rightShoulderAngle: -25, rightElbowAngle: -178, leftHipAngle: 90, leftKneeAngle: 175, rightHipAngle: 90, rightKneeAngle: -175 };
+const plankTop: Pose = { hipX: 55, hipY: 95, torsoAngle: 92, leftShoulderAngle: 25, leftElbowAngle: 178, rightShoulderAngle: -25, rightElbowAngle: -178, leftHipAngle: -88, leftKneeAngle: -88, rightHipAngle: -88, rightKneeAngle: -88 };
+const plankBottom: Pose = { hipX: 55, hipY: 97, torsoAngle: 90, leftShoulderAngle: 25, leftElbowAngle: 178, rightShoulderAngle: -25, rightElbowAngle: -178, leftHipAngle: -90, leftKneeAngle: -90, rightHipAngle: -90, rightKneeAngle: -90 };
 
 const armCircleTop: Pose = { hipX: 60, hipY: 85, torsoAngle: 0, leftShoulderAngle: 30, leftElbowAngle: 25, rightShoulderAngle: -30, rightElbowAngle: -25, leftHipAngle: 170, leftKneeAngle: 178, rightHipAngle: -170, rightKneeAngle: -178 };
 const armCircleBottom: Pose = { hipX: 60, hipY: 85, torsoAngle: 0, leftShoulderAngle: -80, leftElbowAngle: -75, rightShoulderAngle: 80, rightElbowAngle: 75, leftHipAngle: 170, leftKneeAngle: 178, rightHipAngle: -170, rightKneeAngle: -178 };
@@ -60,14 +68,17 @@ const wristBottom: Pose = { hipX: 60, hipY: 85, torsoAngle: 0, leftShoulderAngle
 const situpTop: Pose = { hipX: 60, hipY: 100, torsoAngle: 92, leftShoulderAngle: 92, leftElbowAngle: 95, rightShoulderAngle: 92, rightElbowAngle: -95, leftHipAngle: 60, leftKneeAngle: 235, rightHipAngle: 60, rightKneeAngle: -235 };
 const situpBottom: Pose = { hipX: 60, hipY: 100, torsoAngle: 40, leftShoulderAngle: 40, leftElbowAngle: 45, rightShoulderAngle: 40, rightElbowAngle: -45, leftHipAngle: 60, leftKneeAngle: 235, rightHipAngle: 60, rightKneeAngle: -235 };
 
-const sidePlankTop: Pose = { hipX: 55, hipY: 100, torsoAngle: 92, leftShoulderAngle: -5, leftElbowAngle: 178, rightShoulderAngle: 45, rightElbowAngle: 30, leftHipAngle: 92, leftKneeAngle: 178, rightHipAngle: 92, rightKneeAngle: 178 };
-const sidePlankBottom: Pose = { hipX: 55, hipY: 102, torsoAngle: 90, leftShoulderAngle: -5, leftElbowAngle: 178, rightShoulderAngle: 45, rightElbowAngle: 30, leftHipAngle: 90, leftKneeAngle: 178, rightHipAngle: 90, rightKneeAngle: 178 };
+const sidePlankTop: Pose = { hipX: 55, hipY: 100, torsoAngle: 92, leftShoulderAngle: -5, leftElbowAngle: 178, rightShoulderAngle: 45, rightElbowAngle: 30, leftHipAngle: -88, leftKneeAngle: -88, rightHipAngle: -88, rightKneeAngle: -88 };
+const sidePlankBottom: Pose = { hipX: 55, hipY: 102, torsoAngle: 90, leftShoulderAngle: -5, leftElbowAngle: 178, rightShoulderAngle: 45, rightElbowAngle: 30, leftHipAngle: -90, leftKneeAngle: -90, rightHipAngle: -90, rightKneeAngle: -90 };
 
 const twistTop: Pose = { hipX: 60, hipY: 92, torsoAngle: 5, leftShoulderAngle: 60, leftElbowAngle: 90, rightShoulderAngle: -60, rightElbowAngle: -90, leftHipAngle: 155, leftKneeAngle: 220, rightHipAngle: -155, rightKneeAngle: -220 };
 const twistBottom: Pose = { hipX: 60, hipY: 92, torsoAngle: -20, leftShoulderAngle: 100, leftElbowAngle: 130, rightShoulderAngle: -20, rightElbowAngle: -50, leftHipAngle: 155, leftKneeAngle: 220, rightHipAngle: -155, rightKneeAngle: -220 };
 
-const climberTop: Pose = { hipX: 55, hipY: 95, torsoAngle: 92, leftShoulderAngle: 25, leftElbowAngle: 178, rightShoulderAngle: -25, rightElbowAngle: -178, leftHipAngle: 92, leftKneeAngle: 175, rightHipAngle: 92, rightKneeAngle: -175 };
-const climberBottom: Pose = { hipX: 55, hipY: 95, torsoAngle: 92, leftShoulderAngle: 25, leftElbowAngle: 178, rightShoulderAngle: -25, rightElbowAngle: -178, leftHipAngle: 130, leftKneeAngle: 60, rightHipAngle: 92, rightKneeAngle: -175 };
+// The right leg is the stationary planted leg throughout - stays a
+// straight extended plank leg. The left leg drives forward and folds
+// sharply as the knee comes up toward the chest.
+const climberTop: Pose = { hipX: 55, hipY: 95, torsoAngle: 92, leftShoulderAngle: 25, leftElbowAngle: 178, rightShoulderAngle: -25, rightElbowAngle: -178, leftHipAngle: -88, leftKneeAngle: -88, rightHipAngle: -88, rightKneeAngle: -88 };
+const climberBottom: Pose = { hipX: 55, hipY: 95, torsoAngle: 92, leftShoulderAngle: 25, leftElbowAngle: 178, rightShoulderAngle: -25, rightElbowAngle: -178, leftHipAngle: 30, leftKneeAngle: 130, rightHipAngle: -88, rightKneeAngle: -88 };
 
 const bridgeTop: Pose = { hipX: 60, hipY: 108, torsoAngle: 92, leftShoulderAngle: 92, leftElbowAngle: 95, rightShoulderAngle: 92, rightElbowAngle: -95, leftHipAngle: 150, leftKneeAngle: 65, rightHipAngle: -150, rightKneeAngle: -65 };
 const bridgeBottom: Pose = { hipX: 60, hipY: 92, torsoAngle: 100, leftShoulderAngle: 92, leftElbowAngle: 95, rightShoulderAngle: 92, rightElbowAngle: -95, leftHipAngle: 150, leftKneeAngle: 65, rightHipAngle: -150, rightKneeAngle: -65 };
@@ -81,8 +92,8 @@ const marchBottom: Pose = { hipX: 60, hipY: 90, torsoAngle: 0, leftShoulderAngle
 const jackTop: Pose = { hipX: 60, hipY: 90, torsoAngle: 0, leftShoulderAngle: 165, leftElbowAngle: 170, rightShoulderAngle: -165, rightElbowAngle: -170, leftHipAngle: 172, leftKneeAngle: 178, rightHipAngle: -172, rightKneeAngle: -178 };
 const jackBottom: Pose = { hipX: 60, hipY: 78, torsoAngle: 0, leftShoulderAngle: 10, leftElbowAngle: 10, rightShoulderAngle: -10, rightElbowAngle: -10, leftHipAngle: 140, leftKneeAngle: 165, rightHipAngle: -140, rightKneeAngle: -165 };
 
-const bearTop: Pose = { hipX: 55, hipY: 100, torsoAngle: 100, leftShoulderAngle: 20, leftElbowAngle: 178, rightShoulderAngle: -20, rightElbowAngle: -178, leftHipAngle: 110, leftKneeAngle: 60, rightHipAngle: 100, rightKneeAngle: 175 };
-const bearBottom: Pose = { hipX: 55, hipY: 100, torsoAngle: 100, leftShoulderAngle: 20, leftElbowAngle: 178, rightShoulderAngle: -20, rightElbowAngle: -178, leftHipAngle: 100, leftKneeAngle: 175, rightHipAngle: 110, rightKneeAngle: 60 };
+const bearTop: Pose = { hipX: 55, hipY: 100, torsoAngle: 100, leftShoulderAngle: 20, leftElbowAngle: 178, rightShoulderAngle: -20, rightElbowAngle: -178, leftHipAngle: -70, leftKneeAngle: -120, rightHipAngle: -80, rightKneeAngle: -5 };
+const bearBottom: Pose = { hipX: 55, hipY: 100, torsoAngle: 100, leftShoulderAngle: 20, leftElbowAngle: 178, rightShoulderAngle: -20, rightElbowAngle: -178, leftHipAngle: -80, leftKneeAngle: -5, rightHipAngle: -70, rightKneeAngle: -120 };
 
 const stretchTop: Pose = { hipX: 60, hipY: 92, torsoAngle: 30, leftShoulderAngle: 40, leftElbowAngle: 35, rightShoulderAngle: -40, rightElbowAngle: -35, leftHipAngle: 160, leftKneeAngle: 172, rightHipAngle: -178, rightKneeAngle: -172 };
 const stretchBottom: Pose = { hipX: 60, hipY: 92, torsoAngle: 40, leftShoulderAngle: 50, leftElbowAngle: 45, rightShoulderAngle: -50, rightElbowAngle: -45, leftHipAngle: 160, leftKneeAngle: 172, rightHipAngle: -178, rightKneeAngle: -172 };
