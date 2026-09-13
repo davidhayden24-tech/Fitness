@@ -18,7 +18,6 @@ import {
   SOLE_COLOR,
   SOLE_PATH,
 } from "../animations/limbShapes";
-import { colors } from "../theme";
 
 const AnimatedG = Animated.createAnimatedComponent(G);
 
@@ -67,6 +66,10 @@ const SLEEVE_TRIM = "#20242E";
 const SHORTS_STRIPE = "#E8EAF0";
 const LACE = "#0E1420";
 const DEFINITION = "#000000";
+// The default shirt color - independent of the app's own brand color
+// (colors.primary), since this character's outfit is its own design
+// choice, not a UI accent.
+const DEFAULT_SHIRT = "#2D6FE0";
 
 /**
  * A stylized, looping "illustrated athlete" animation standing in for real
@@ -96,7 +99,7 @@ const DEFINITION = "#000000";
  * dimensional, athletic-outfit look that reference has over a completely
  * flat fill.
  */
-export function ExerciseAnimation({ pattern, size = 140, color = colors.primary }: Props) {
+export function ExerciseAnimation({ pattern, size = 140, color = DEFAULT_SHIRT }: Props) {
   const progress = useRef(new Animated.Value(0)).current;
 
   const keyframes = useMemo(() => EXERCISE_ANIMATIONS[pattern], [pattern]);

@@ -1,6 +1,6 @@
-// Tapered/bulging limb silhouettes for the illustrated-athlete rendering
-// in ExerciseAnimation.tsx. Pure geometry, no React/RN dependency - each
-// limb's path string is precomputed once here since it never changes;
+// Body-part silhouettes for the illustrated-athlete rendering in
+// ExerciseAnimation.tsx. Pure geometry, no React/RN dependency - each
+// shape's path string is precomputed once here since it never changes;
 // only the wrapping <G>'s position/rotation animates per frame.
 import { LENGTHS } from "./pose";
 
@@ -68,6 +68,37 @@ function limbPath(length: number, widthAt: (t: number) => number, samples = 9): 
   return asymmetricPath(length, widthAt, widthAt, widthAt(0), samples);
 }
 
+// Same idea as limbPath, but rounded at BOTH ends instead of just the
+// proximal joint. Only the torso needs this: its distal end (the
+// shoulders) isn't covered by a single child's own rounded cap the way
+// every other limb's distal end is (two separate arms each contribute a
+// small cap there, not one that spans the full shoulder width), so a
+// flat-cut torso tip was sticking out past the arms as a stray wedge
+// beside the neck. Rounding the torso's own tip fixes that at the root
+// instead of just capping how wide the shoulders are allowed to be.
+function limbPathRoundedBothEnds(length: number, widthAt: (t: number) => number, samples = 9): string {
+  const left: Point[] = [];
+  const right: Point[] = [];
+  for (let i = 0; i <= samples; i++) {
+    const t = i / samples;
+    const w = widthAt(t);
+    const y = -t * length;
+    left.push({ x: -w, y });
+    right.push({ x: w, y });
+  }
+  const leftPath = smoothSide(left);
+  const tipW = widthAt(1);
+  const distalSamples = 5;
+  const distalPoints: Point[] = [];
+  for (let i = 0; i <= distalSamples; i++) {
+    const angle = (i / distalSamples) * Math.PI;
+    distalPoints.push({ x: -tipW * Math.cos(angle), y: -length - tipW * Math.sin(angle) });
+  }
+  const distalCap = smoothSide(distalPoints).replace("M", "L");
+  const rightPath = smoothSide(right.slice().reverse()).replace("M", "L");
+  return `${leftPath} ${distalCap} ${rightPath} ${roundedCap(widthAt(0))} Z`;
+}
+
 // A soft bulge-then-taper half-width curve: rises from `base` to `peak`
 // (reached at t = peakAt, roughly where the muscle belly would be) then
 // eases down to `tip`. Wider base-to-tip contrast than a plain taper
@@ -97,13 +128,10 @@ const SHORTS_LENGTH = LENGTHS.thigh * 0.55;
 
 const WIDTH_PROFILES: Record<LimbName, (t: number) => number> = {
   // Narrower at the waist (proximal, hip end), wider at the shoulders
-  // (distal end) than a plain torso tube - an athletic V-taper. Slightly
-  // trimmer overall than earlier passes (narrower waist, leaner limbs)
-  // for a more athletic build instead of a stocky one.
-  // Tip capped at 9.2 (not wider) - much past that and the torso's flat,
-  // unrounded distal edge starts sticking out past where the arms attach,
-  // reading as a stray wedge beside the neck instead of a shoulder line.
-  torso: bulge(5.6, 6.6, 0.3, 9.2),
+  // (distal end) - an athletic V-taper. The rounded-both-ends torso path
+  // means this can be as wide as looks right without the flat-tip wedge
+  // problem a plain limbPath would have here.
+  torso: bulge(5.6, 6.6, 0.3, 10.2),
   upperArm: bulge(4.9, 6.1, 0.4, 3.3),
   forearm: bulge(4.1, 4.3, 0.2, 2.2),
   thigh: bulge(6.6, 8, 0.4, 4.6),
@@ -113,7 +141,7 @@ const WIDTH_PROFILES: Record<LimbName, (t: number) => number> = {
 };
 
 export const LIMB_PATHS: Record<LimbName, string> = {
-  torso: limbPath(LENGTHS.torso, WIDTH_PROFILES.torso),
+  torso: limbPathRoundedBothEnds(LENGTHS.torso, WIDTH_PROFILES.torso),
   upperArm: limbPath(LENGTHS.upperArm, WIDTH_PROFILES.upperArm),
   forearm: limbPath(LENGTHS.forearm, WIDTH_PROFILES.forearm),
   thigh: limbPath(LENGTHS.thigh, WIDTH_PROFILES.thigh),
@@ -158,13 +186,13 @@ function handPath(): string {
 
 export const HAND_PATH = handPath();
 
-// A simple sneaker silhouette instead of a plain dot: an asymmetric
-// shape (curved instep on one side, wider sole on the other, both
-// bulging near the ball of the foot before narrowing to a rounded toe)
-// extending from the ankle in the same direction the shin already
-// points - there's no separate ankle-angle field in Pose, so this reuses
-// the shin's own rotation, the same approximation used for the hand off
-// the forearm's angle.
+// A sneaker silhouette instead of a plain dot: an asymmetric shape
+// (curved instep on one side, wider sole on the other, both bulging near
+// the ball of the foot before narrowing to a rounded toe) extending from
+// the ankle in the same direction the shin already points - there's no
+// separate ankle-angle field in Pose, so this reuses the shin's own
+// rotation, the same approximation used for the hand off the forearm's
+// angle.
 const SHOE_LENGTH = 7.5;
 const shoeInstep = bulge(2.2, 2.6, 0.35, 1.3);
 const shoeSole = bulge(3, 4.2, 0.45, 1.6);
