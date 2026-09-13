@@ -96,7 +96,9 @@ const NECK_LENGTH = LENGTHS.headRadius * 1.4;
 const SHORTS_LENGTH = LENGTHS.thigh * 0.55;
 
 const WIDTH_PROFILES: Record<LimbName, (t: number) => number> = {
-  torso: bulge(6.5, 7, 0.3, 9),
+  // Narrower at the waist (proximal, hip end), wider at the shoulders
+  // (distal end) than a plain torso tube - an athletic V-taper.
+  torso: bulge(6, 7, 0.3, 10.5),
   upperArm: bulge(5.2, 6.4, 0.4, 3.6),
   forearm: bulge(4.4, 4.6, 0.2, 2.4),
   thigh: bulge(7, 8.5, 0.4, 5),
@@ -172,3 +174,42 @@ export const SOLE_PATH = asymmetricPath(SHOE_LENGTH, () => 0.4, shoeSole, SHOE_C
 
 export const SHOE_COLOR = "#2D6FE0";
 export const SOLE_COLOR = "#173F8C";
+
+// A short darker band at the very top of the upper arm - a raglan-style
+// sleeve trim - drawn on top of the (bare skin) upper arm right at the
+// shoulder end, matching the reference's color-blocked sleeve cap rather
+// than a plain sleeveless tank.
+const SLEEVE_CAP_LENGTH = LENGTHS.upperArm * 0.3;
+export const SLEEVE_CAP_PATH = limbPath(SLEEVE_CAP_LENGTH, (t) => WIDTH_PROFILES.upperArm(t * 0.3));
+
+// A thin accent stripe down one side of the shorts. asymmetricPath always
+// straddles the local x=0 centerline (mirroring left/right around it), so
+// it can't produce a band that sits entirely to one side - this instead
+// builds a simple flat-capped rectangle offset away from center.
+function sideStripe(length: number, xCenter: number, halfWidth: number, samples = 4): string {
+  const left: Point[] = [];
+  const right: Point[] = [];
+  for (let i = 0; i <= samples; i++) {
+    const y = -(i / samples) * length;
+    left.push({ x: xCenter - halfWidth, y });
+    right.push({ x: xCenter + halfWidth, y });
+  }
+  const leftPath = smoothSide(left);
+  const rightPath = smoothSide(right.slice().reverse()).replace("M", "L");
+  return `${leftPath} ${rightPath} Z`;
+}
+
+export const SHORTS_STRIPE_PATH = sideStripe(SHORTS_LENGTH * 0.85, 6.2, 0.55);
+
+// A couple of short crossing lines suggesting shoelaces, in the same
+// local space as SHOE_PATH (heel at the origin, toe toward -Y).
+export const SHOE_LACE_PATH = (() => {
+  const y1 = -SHOE_LENGTH * 0.35;
+  const y2 = -SHOE_LENGTH * 0.55;
+  const y3 = -SHOE_LENGTH * 0.75;
+  return [
+    `M ${-1.6},${y1} L ${1.6},${y1 - 1.4}`,
+    `M ${-1.6},${y2} L ${1.6},${y2 - 1.4}`,
+    `M ${-1.4},${y3} L ${1.4},${y3 - 1.2}`,
+  ].join(" ");
+})();

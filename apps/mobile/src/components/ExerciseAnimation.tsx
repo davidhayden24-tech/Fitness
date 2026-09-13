@@ -1,9 +1,19 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import { Animated, Easing, StyleSheet, View } from "react-native";
-import Svg, { Circle, G, Path } from "react-native-svg";
+import Svg, { Circle, Defs, G, LinearGradient, Path, Stop } from "react-native-svg";
 import { computeSkeleton, LENGTHS, type Skeleton } from "../animations/pose";
 import { EXERCISE_ANIMATIONS, type ExerciseAnimationId } from "../animations/exerciseAnimations";
-import { HAND_PATH, LIMB_PATHS, SHOE_COLOR, SHOE_PATH, SOLE_COLOR, SOLE_PATH } from "../animations/limbShapes";
+import {
+  HAND_PATH,
+  LIMB_PATHS,
+  SHOE_COLOR,
+  SHOE_LACE_PATH,
+  SHOE_PATH,
+  SHORTS_STRIPE_PATH,
+  SLEEVE_CAP_PATH,
+  SOLE_COLOR,
+  SOLE_PATH,
+} from "../animations/limbShapes";
 import { colors } from "../theme";
 
 const AnimatedG = Animated.createAnimatedComponent(G);
@@ -49,6 +59,9 @@ const ANGLE_KEYS: AngleKey[] = [
 const SKIN = "#D9A066";
 const SHORTS = "#2A2E38";
 const HAIR = "#1B1B1F";
+const SLEEVE_TRIM = "#20242E";
+const SHORTS_STRIPE = "#E8EAF0";
+const LACE = "#0E1420";
 
 /**
  * A stylized, looping "illustrated athlete" animation standing in for real
@@ -69,10 +82,14 @@ const HAIR = "#1B1B1F";
  * animated x/y (joint position) and rotation place it correctly every
  * frame with no per-frame path recomputation.
  *
- * Flat-vector style (no outlines, no face) matching a reference stock
- * illustration: adjacent same-colored limbs (e.g. upper arm, forearm and
- * hand, all bare skin) rely on their own rounded-cap overlap to read as
- * one continuous shape, since there's no stroke line to separate them.
+ * No outlines and no face, matching a reference illustration: adjacent
+ * same-colored limbs (e.g. upper arm, forearm and hand, all bare skin)
+ * rely on their own rounded-cap overlap to read as one continuous shape,
+ * since there's no stroke line to separate them. A subtle directional
+ * gradient (id="shade") is layered on top of every limb, plus a raglan
+ * sleeve trim, a shorts stripe and shoe laces, for a bit more of the
+ * dimensional, athletic-outfit look that reference has over a completely
+ * flat fill.
  */
 export function ExerciseAnimation({ pattern, size = 140, color = colors.primary }: Props) {
   const progress = useRef(new Animated.Value(0)).current;
@@ -122,56 +139,84 @@ export function ExerciseAnimation({ pattern, size = 140, color = colors.primary 
   return (
     <View style={styles.container}>
       <Svg width={size} height={(size * VIEW_H) / VIEW_W} viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}>
+        <Defs>
+          <LinearGradient id="shade" x1="0" y1="0" x2="1" y2="0.15">
+            <Stop offset="0" stopColor="#FFFFFF" stopOpacity={0.2} />
+            <Stop offset="0.5" stopColor="#FFFFFF" stopOpacity={0} />
+            <Stop offset="1" stopColor="#000000" stopOpacity={0.18} />
+          </LinearGradient>
+        </Defs>
+
         {/* Legs behind the torso/arms, so the hip and shoulder joints
             layer naturally on top of them. Thighs are bare skin with a
             short shorts overlay layered on top, rather than the shorts
             covering the whole thigh, so the lower thigh shows through. */}
         <AnimatedG x={points.hip.x} y={points.hip.y} rotation={angles.leftHipAngle}>
           <Path d={LIMB_PATHS.thigh} fill={SKIN} />
+          <Path d={LIMB_PATHS.thigh} fill="url(#shade)" />
           <Path d={LIMB_PATHS.shorts} fill={SHORTS} />
+          <Path d={SHORTS_STRIPE_PATH} fill={SHORTS_STRIPE} />
         </AnimatedG>
         <AnimatedG x={points.hip.x} y={points.hip.y} rotation={angles.rightHipAngle}>
           <Path d={LIMB_PATHS.thigh} fill={SKIN} />
+          <Path d={LIMB_PATHS.thigh} fill="url(#shade)" />
           <Path d={LIMB_PATHS.shorts} fill={SHORTS} />
+          <Path d={SHORTS_STRIPE_PATH} fill={SHORTS_STRIPE} />
         </AnimatedG>
         <AnimatedG x={points.leftKnee.x} y={points.leftKnee.y} rotation={angles.leftKneeAngle}>
           <Path d={LIMB_PATHS.shin} fill={SKIN} />
+          <Path d={LIMB_PATHS.shin} fill="url(#shade)" />
         </AnimatedG>
         <AnimatedG x={points.rightKnee.x} y={points.rightKnee.y} rotation={angles.rightKneeAngle}>
           <Path d={LIMB_PATHS.shin} fill={SKIN} />
+          <Path d={LIMB_PATHS.shin} fill="url(#shade)" />
         </AnimatedG>
         <AnimatedG x={points.leftFoot.x} y={points.leftFoot.y} rotation={angles.leftKneeAngle}>
           <Path d={SHOE_PATH} fill={SHOE_COLOR} />
           <Path d={SOLE_PATH} fill={SOLE_COLOR} />
+          <Path d={SHOE_LACE_PATH} stroke={LACE} strokeWidth={0.7} fill="none" strokeLinecap="round" />
+          <Path d={SHOE_PATH} fill="url(#shade)" />
         </AnimatedG>
         <AnimatedG x={points.rightFoot.x} y={points.rightFoot.y} rotation={angles.rightKneeAngle}>
           <Path d={SHOE_PATH} fill={SHOE_COLOR} />
           <Path d={SOLE_PATH} fill={SOLE_COLOR} />
+          <Path d={SHOE_LACE_PATH} stroke={LACE} strokeWidth={0.7} fill="none" strokeLinecap="round" />
+          <Path d={SHOE_PATH} fill="url(#shade)" />
         </AnimatedG>
 
         {/* Torso keeps the outfit color; arms are bare skin (a sleeveless
             tank), so upper arm, forearm and hand all share one fill and
-            read as a single continuous arm. */}
+            read as a single continuous arm - just with a raglan-style
+            sleeve trim at the shoulder instead of a plain flat cutoff. */}
         <AnimatedG x={points.hip.x} y={points.hip.y} rotation={angles.torsoAngle}>
           <Path d={LIMB_PATHS.torso} fill={color} />
+          <Path d={LIMB_PATHS.torso} fill="url(#shade)" />
         </AnimatedG>
         <AnimatedG x={points.shoulder.x} y={points.shoulder.y} rotation={angles.leftShoulderAngle}>
           <Path d={LIMB_PATHS.upperArm} fill={SKIN} />
+          <Path d={LIMB_PATHS.upperArm} fill="url(#shade)" />
+          <Path d={SLEEVE_CAP_PATH} fill={SLEEVE_TRIM} />
         </AnimatedG>
         <AnimatedG x={points.shoulder.x} y={points.shoulder.y} rotation={angles.rightShoulderAngle}>
           <Path d={LIMB_PATHS.upperArm} fill={SKIN} />
+          <Path d={LIMB_PATHS.upperArm} fill="url(#shade)" />
+          <Path d={SLEEVE_CAP_PATH} fill={SLEEVE_TRIM} />
         </AnimatedG>
         <AnimatedG x={points.leftElbow.x} y={points.leftElbow.y} rotation={angles.leftElbowAngle}>
           <Path d={LIMB_PATHS.forearm} fill={SKIN} />
+          <Path d={LIMB_PATHS.forearm} fill="url(#shade)" />
         </AnimatedG>
         <AnimatedG x={points.rightElbow.x} y={points.rightElbow.y} rotation={angles.rightElbowAngle}>
           <Path d={LIMB_PATHS.forearm} fill={SKIN} />
+          <Path d={LIMB_PATHS.forearm} fill="url(#shade)" />
         </AnimatedG>
         <AnimatedG x={points.leftHand.x} y={points.leftHand.y} rotation={angles.leftElbowAngle}>
           <Path d={HAND_PATH} fill={SKIN} />
+          <Path d={HAND_PATH} fill="url(#shade)" />
         </AnimatedG>
         <AnimatedG x={points.rightHand.x} y={points.rightHand.y} rotation={angles.rightElbowAngle}>
           <Path d={HAND_PATH} fill={SKIN} />
+          <Path d={HAND_PATH} fill="url(#shade)" />
         </AnimatedG>
 
         {/* Neck: fills the gap pose.ts leaves between the shoulder and
@@ -180,6 +225,7 @@ export function ExerciseAnimation({ pattern, size = 140, color = colors.primary 
             at the shoulder joint just like the torso does at the hip. */}
         <AnimatedG x={points.shoulder.x} y={points.shoulder.y} rotation={angles.torsoAngle}>
           <Path d={LIMB_PATHS.neck} fill={SKIN} />
+          <Path d={LIMB_PATHS.neck} fill="url(#shade)" />
         </AnimatedG>
 
         {/* Head + hair: a big offset hair-colored circle drawn behind the
@@ -189,6 +235,7 @@ export function ExerciseAnimation({ pattern, size = 140, color = colors.primary 
         <AnimatedG x={points.head.x} y={points.head.y} rotation={angles.torsoAngle}>
           <Circle cx={-r * 0.22} cy={-r * 0.28} r={r * 1.32} fill={HAIR} />
           <Circle cx={0} cy={0} r={r} fill={SKIN} />
+          <Circle cx={0} cy={0} r={r} fill="url(#shade)" />
         </AnimatedG>
       </Svg>
     </View>
