@@ -97,14 +97,19 @@ const SHORTS_LENGTH = LENGTHS.thigh * 0.55;
 
 const WIDTH_PROFILES: Record<LimbName, (t: number) => number> = {
   // Narrower at the waist (proximal, hip end), wider at the shoulders
-  // (distal end) than a plain torso tube - an athletic V-taper.
-  torso: bulge(6, 7, 0.3, 10.5),
-  upperArm: bulge(5.2, 6.4, 0.4, 3.6),
-  forearm: bulge(4.4, 4.6, 0.2, 2.4),
-  thigh: bulge(7, 8.5, 0.4, 5),
-  shin: bulge(5.2, 6.2, 0.25, 2.8),
+  // (distal end) than a plain torso tube - an athletic V-taper. Slightly
+  // trimmer overall than earlier passes (narrower waist, leaner limbs)
+  // for a more athletic build instead of a stocky one.
+  // Tip capped at 9.2 (not wider) - much past that and the torso's flat,
+  // unrounded distal edge starts sticking out past where the arms attach,
+  // reading as a stray wedge beside the neck instead of a shoulder line.
+  torso: bulge(5.6, 6.6, 0.3, 9.2),
+  upperArm: bulge(4.9, 6.1, 0.4, 3.3),
+  forearm: bulge(4.1, 4.3, 0.2, 2.2),
+  thigh: bulge(6.6, 8, 0.4, 4.6),
+  shin: bulge(4.9, 5.8, 0.25, 2.5),
   neck: bulge(3.6, 3.8, 0.3, 4.2),
-  shorts: bulge(7.2, 8.5, 0.6, 9),
+  shorts: bulge(6.8, 8, 0.6, 8.6),
 };
 
 export const LIMB_PATHS: Record<LimbName, string> = {
@@ -216,3 +221,13 @@ export const SHOE_LACE_PATH = (() => {
     `M ${-1.4},${y3} L ${1.4},${y3 - 1.2}`,
   ].join(" ");
 })();
+
+// Subtle stroked accent curves suggesting muscle separation (bicep,
+// quad, calf) or a pec crease through the shirt - a stylized shorthand
+// rather than anatomy, drawn as a single soft curve within each limb's
+// own local space (proximal joint at the origin, extending toward -Y),
+// so they rotate and move with the limb like everything else here.
+export const BICEP_LINE_PATH = "M -3,-3 Q -5.3,-10.5 -2.8,-18";
+export const QUAD_LINE_PATH = "M -3.6,-4 Q -6.8,-13 -3.6,-23";
+export const CALF_LINE_PATH = "M -2.6,-3 Q -4.8,-11 -2.6,-19";
+export const CHEST_LINE_PATH = "M 2.5,-30 Q 5.5,-33.5 7.5,-30.5";
