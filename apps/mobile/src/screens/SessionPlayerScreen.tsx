@@ -5,7 +5,7 @@ import type { Exercise, PlannedExercise, SkipReason, WorkoutSession } from "@ada
 import { SESSION_FEEDBACK } from "@adaptfit/shared";
 import { useApi } from "../api/useApi";
 import { ExerciseAnimation } from "../components/ExerciseAnimation";
-import { patternForSubstituteGroup } from "../animations/exercisePatternMap";
+import { animationForExercise } from "../animations/exerciseAnimationLookup";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { colors, radius, spacing } from "../theme";
 import type { RootStackParamList } from "../navigation/types";
@@ -64,7 +64,7 @@ export function SessionPlayerScreen({ route, navigation }: Props) {
   const planned: PlannedExercise | undefined = session?.exercises[index];
   const exercise = planned ? exercises.find((e) => e.id === planned.exerciseId) : undefined;
   const animationPattern = useMemo(
-    () => (exercise ? patternForSubstituteGroup(exercise.substituteGroupId) : undefined),
+    () => (exercise ? animationForExercise(exercise.id) : undefined),
     [exercise]
   );
 

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef } from "react";
 import { Animated, Easing, StyleSheet, View } from "react-native";
 import Svg, { Circle, G, Path } from "react-native-svg";
 import { computeSkeleton, LENGTHS, type Skeleton } from "../animations/pose";
-import { PATTERNS, type AnimationPattern } from "../animations/patterns";
+import { EXERCISE_ANIMATIONS, type ExerciseAnimationId } from "../animations/exerciseAnimations";
 import { HAND_PATH, LIMB_PATHS, SHOE_COLOR, SHOE_PATH, SOLE_COLOR, SOLE_PATH } from "../animations/limbShapes";
 import { colors } from "../theme";
 
@@ -13,7 +13,7 @@ const VIEW_H = 160;
 const CYCLE_MS = 900;
 
 interface Props {
-  pattern: AnimationPattern;
+  pattern: ExerciseAnimationId;
   size?: number;
   color?: string;
 }
@@ -53,9 +53,9 @@ const HAIR = "#1B1B1F";
 /**
  * A stylized, looping "illustrated athlete" animation standing in for real
  * exercise video/animation (see apps/backend/src/data/exercises.ts -
- * videoAssetRef is still null for every seeded exercise). Each movement
- * pattern (patterns.ts) is a sequence of 3+ keyframe poses, not just a
- * start/end pair - `progress` sweeps through them as a multi-stop
+ * videoAssetRef is still null for every seeded exercise). Each exercise
+ * (exerciseAnimations.ts) has its own sequence of 3+ keyframe poses, not
+ * just a start/end pair - `progress` sweeps through them as a multi-stop
  * piecewise-linear interpolation (Animated.interpolate natively supports
  * >2-point inputRange/outputRange), so the motion actually passes through
  * the in-between poses instead of blending only two extremes. This drives
@@ -77,7 +77,7 @@ const HAIR = "#1B1B1F";
 export function ExerciseAnimation({ pattern, size = 140, color = colors.primary }: Props) {
   const progress = useRef(new Animated.Value(0)).current;
 
-  const keyframes = useMemo(() => PATTERNS[pattern], [pattern]);
+  const keyframes = useMemo(() => EXERCISE_ANIMATIONS[pattern], [pattern]);
   const lastIndex = keyframes.length - 1;
 
   useEffect(() => {
