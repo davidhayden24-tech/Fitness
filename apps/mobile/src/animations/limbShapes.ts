@@ -205,8 +205,8 @@ export const SHOE_PATH = asymmetricPath(SHOE_LENGTH, shoeInstep, shoeSole, SHOE_
 // edge) for a simple two-tone sneaker look.
 export const SOLE_PATH = asymmetricPath(SHOE_LENGTH, () => 0.4, shoeSole, SHOE_CAP_RADIUS);
 
-export const SHOE_COLOR = "#2D6FE0";
-export const SOLE_COLOR = "#173F8C";
+export const SHOE_COLOR = "#1C1C1E";
+export const SOLE_COLOR = "#E8622C";
 
 // A real short sleeve - covering a proper chunk of the upper arm in the
 // shirt color, not just a thin trim - drawn on top of the (bare skin)
@@ -217,25 +217,6 @@ export const SOLE_COLOR = "#173F8C";
 const SLEEVE_FRACTION = 0.42;
 const SLEEVE_CAP_LENGTH = LENGTHS.upperArm * SLEEVE_FRACTION;
 export const SLEEVE_CAP_PATH = limbPath(SLEEVE_CAP_LENGTH, (t) => WIDTH_PROFILES.upperArm(t * SLEEVE_FRACTION) * 1.08);
-
-// A thin accent stripe down one side of the shorts. asymmetricPath always
-// straddles the local x=0 centerline (mirroring left/right around it), so
-// it can't produce a band that sits entirely to one side - this instead
-// builds a simple flat-capped rectangle offset away from center.
-function sideStripe(length: number, xCenter: number, halfWidth: number, samples = 4): string {
-  const left: Point[] = [];
-  const right: Point[] = [];
-  for (let i = 0; i <= samples; i++) {
-    const y = -(i / samples) * length;
-    left.push({ x: xCenter - halfWidth, y });
-    right.push({ x: xCenter + halfWidth, y });
-  }
-  const leftPath = smoothSide(left);
-  const rightPath = smoothSide(right.slice().reverse()).replace("M", "L");
-  return `${leftPath} ${rightPath} Z`;
-}
-
-export const SHORTS_STRIPE_PATH = sideStripe(SHORTS_LENGTH * 0.85, 6.2, 0.55);
 
 // A couple of short crossing lines suggesting shoelaces, in the same
 // local space as SHOE_PATH (heel at the origin, toe toward -Y).
@@ -249,13 +230,3 @@ export const SHOE_LACE_PATH = (() => {
     `M ${-1.4},${y3} L ${1.4},${y3 - 1.2}`,
   ].join(" ");
 })();
-
-// Subtle stroked accent curves suggesting muscle separation (bicep,
-// quad, calf) or a pec crease through the shirt - a stylized shorthand
-// rather than anatomy, drawn as a single soft curve within each limb's
-// own local space (proximal joint at the origin, extending toward -Y),
-// so they rotate and move with the limb like everything else here.
-export const BICEP_LINE_PATH = "M -3,-3 Q -5.3,-10.5 -2.8,-18";
-export const QUAD_LINE_PATH = "M -3.6,-4 Q -6.8,-13 -3.6,-23";
-export const CALF_LINE_PATH = "M -2.6,-3 Q -4.8,-11 -2.6,-19";
-export const CHEST_LINE_PATH = "M 2.5,-30 Q 5.5,-33.5 7.5,-30.5";
